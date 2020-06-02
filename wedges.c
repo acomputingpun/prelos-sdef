@@ -207,8 +207,42 @@ static WedgeSpecList wslPush(WedgeSpecList self, wedgeSpec data) {
     return new;
 }
 
-static void wslClip(WedgeSpecList self, wedgeSpec bounding) {
-    return;
+static void wslSplit(WedgeSpecList self, ray splitEdge) {
+    if (self == NULL) {
+        return;
+    } else if (wsContains(self->data, splitEdge)) {
+        WedgeSpecList new = malloc(sizeof(struct wedgeSpecList));
+        new->data = self->data;
+        new->next = self->next;
+        self->next = new;
+
+        self->data.cwEdge = splitEdge;
+        new->data.ccwEdge = splitEdge;
+        return;
+    } else {
+        return wslSplit(self->next, splitEdge);
+    }
+}
+
+static WedgeSpecList wslClip(WedgeSpecList self, wedgeSpec bounding) {
+//    Not yet implemented!
+    return NULL;
+    WedgeSpecList dest = NULL;
+    while (1) {
+        if ( wsContains(self->data, bounding.cwEdge) ) {
+            if ( wsContains(self->data, bounding.ccwEdge) ) {
+                // clip entirely?
+//                self->data
+            } else {
+            }
+        } else {
+            if ( wsContains(self->data, bounding.ccwEdge) ) {
+            } else {
+                dest = wslPush(dest, self->data);
+            }
+        }
+
+    }
 }
 
 void wPrint(Wedge self) {

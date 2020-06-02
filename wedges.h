@@ -14,6 +14,22 @@ static inline wedgeSpec wsCreate(int diagID, ray cwEdge, ray ccwEdge) {
 static inline wedgeSpec wsInitial(){
     return wsCreate(0, rayCreate(1,0), rayCreate(1,1) );
 }
+static inline int wsContains(wedgeSpec ws, ray edge){
+    if (rayCmp(ws.ccwEdge, edge) < 0) {
+        return 0;
+    } else if (rayCmp(ws.cwEdge, edge) > 0) {
+        return 0;
+    }
+    return 1;
+}
+static inline int wsContainsInclusive(wedgeSpec ws, ray edge) {
+    if (rayCmp(ws.ccwEdge, edge) <= 0) {
+        return 0;
+    } else if (rayCmp(ws.cwEdge, edge) >= 0) {
+        return 0;
+    }
+    return 1;
+}
 
 // ---
 
