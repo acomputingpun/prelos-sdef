@@ -44,7 +44,7 @@ struct wedge {
     xyPos firstTile;
     int segmentLength;
 
-    int * childMap;
+    int ** childMap;
 };
 
 typedef struct wedgeList * WedgeList;
@@ -55,7 +55,7 @@ WedgeDict wdiCreate(Octant oct);
 void wdiDestroy(WedgeDict self);
 void wdiPrint(WedgeDict self);
 
-Wedge wdiLookup(WedgeDict self, wedgeSpec spec);
+Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec);
 void wPrint(Wedge self);
 
-WedgeSpecList owBitsToChildren(Wedge wedge, unsigned int blockingBits);
+void wRecursiveTraverse(Octant oct, WedgeDict wdi, int maxDepth);

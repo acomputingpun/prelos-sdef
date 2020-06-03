@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <math.h>
+
 #include "poses.h"
 #include "tiles.h"
 #include "rays.h"
@@ -10,13 +13,13 @@ void test() {
     WedgeDict wdi = wdiCreate(o);
     wdiPrint(wdi);
 
-    Wedge w = wdiLookup(wdi, wsInitial());
+    wdiLookup(o, wdi, wsInitial());
 
     wdiPrint(wdi);
 
-    owBitsToChildren(w, 0);
+    printf("Running recursive traverse!\n");
 
-    wdiPrint(wdi);
+    wRecursiveTraverse(o, wdi, 3);
 
     return;
 }

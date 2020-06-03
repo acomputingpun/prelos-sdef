@@ -12,3 +12,17 @@ static inline ray rayCreate(int x, int y) {
     r.y = y;
     return r;
 }
+
+static inline xyPos cwDiagIntersectTile(ray edge, int xAxisIntersect) {
+    xyPos intersect;
+    intersect.x = floor(xAxisIntersect / (1.0 + ((float)edge.y / (float)edge.x)));
+    intersect.y = xAxisIntersect - intersect.x;
+    return intersect;
+}
+
+static inline xyPos ccwDiagIntersectTile(ray edge, int xAxisIntersect) {
+    xyPos intersect;
+    intersect.x = ceil(xAxisIntersect / (1.0 + ((float)edge.y / (float)edge.x)));
+    intersect.y = xAxisIntersect - intersect.x;
+    return intersect;
+}
