@@ -2,7 +2,8 @@ typedef xyPos ray;
 
 #define rayPrint(r) xyPosPrint(r)
 #define rayEquals(r1, r2) ((r1.x == r2.x) && (r1.y == r2.y))
-#define hashRay(r) ( (r.x ^ (r.x*7)) + (r.y ^ (r.y*11)) )
+//#define hashRay(r) ( (r.x ^ (r.x*7)) + (r.y ^ (r.y*11)) )
+#define hashRay(r) (r.x ^ (r.y << 8))
 
 #define rayCmp(r1, r2) xyGradCmp(r1, r2)
 

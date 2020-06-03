@@ -45,9 +45,9 @@ struct wedge {
     int segmentLength;
 
     int ** childMap;
+    int mergedID;
 };
 
-typedef struct wedgeList * WedgeList;
 typedef struct wedgeSpecList * WedgeSpecList;
 
 typedef struct wedgeDict * WedgeDict;
@@ -56,6 +56,8 @@ void wdiDestroy(WedgeDict self);
 void wdiPrint(WedgeDict self);
 
 Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec);
+Wedge wdiLookupIndex(WedgeDict self, int wedgeID);
 void wPrint(Wedge self);
 
 void wRecursiveTraverse(Octant oct, WedgeDict wdi, int maxDepth);
+void wdiMergeEquivalent(WedgeDict wdi);

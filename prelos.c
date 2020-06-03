@@ -7,7 +7,9 @@
 #include "wedges.h"
 
 void test() {
-    Octant o = octCreate(5);
+    int oDepth = 15;
+
+    Octant o = octCreate(oDepth);
     octPrint(o);
 
     WedgeDict wdi = wdiCreate(o);
@@ -19,7 +21,11 @@ void test() {
 
     printf("Running recursive traverse!\n");
 
-    wRecursiveTraverse(o, wdi, 3);
+    wRecursiveTraverse(o, wdi, oDepth-1);
+
+    wdiMergeEquivalent(wdi);
+
+    wdiPrint(wdi);
 
     return;
 }
