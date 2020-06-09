@@ -9,10 +9,6 @@ int tLookup(void * grid, xyPos xy) {
     return tDiagLookups(grid, xy, 1);
 }
 
-unsigned int tLookups(void * grid, xyPos * poses, int len) {
-    return 0;
-}
-
 unsigned int tDiagLookups(void * grid, xyPos source, int len) {
     int (*callback)(int x, int y, int segmentLen) = grid;
     return callback(source.x, source.y, len);

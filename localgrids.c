@@ -31,17 +31,6 @@ unsigned int tDiagLookups(void * grid, xyPos source, int len) {
     return result;
 }
 
-unsigned int tLookups(void * grid, xyPos * poses, int len) {
-    unsigned int result = 0;
-    for (int k = 0; k < len; k++) {
-        result = result << 1;
-        if (tLookup(grid, poses[k])) {
-            result++;
-        }
-    }
-    return result;
-}
-
 void * gridCreate(xyPos size) {
     Grid self = malloc(sizeof(struct grid));
     self->size = size;
