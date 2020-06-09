@@ -62,7 +62,7 @@ void testGrid() {
 }
 
 void testRecast() {
-    int oDepth = 3;
+    int oDepth = 7;
 
     void * grid = setupGrid();
 

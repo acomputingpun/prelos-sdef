@@ -22,6 +22,8 @@ struct node {
 };
 
 static void nCreate (NodeMemory nm, WedgeDict wdi, int wIndex);
+static void nFlatten(Node n, FILE * stream);
+static Node nUnflatten(FILE * stream);
 
 NodeMemory nmCreate(WedgeDict wdi) {
     NodeMemory self = malloc(sizeof(struct nodeMemory));
@@ -72,16 +74,16 @@ static void nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
 
     for (unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(w); blockingBits++) {
 
-        printf("   -Copying BlockingBits |%x|\n", blockingBits);
+//        printf("   -Copying BlockingBits |%x|\n", blockingBits);
 
         int arrLen = w->childMap[blockingBits][0]+1;
 
-        printf("   -ArrLen is %d\n", arrLen);
+/*        printf("   -ArrLen is %d\n", arrLen);
         printf("   -Arr is:");
         for (int k = 1; k < arrLen; k++) {
             printf("%d,", w->childMap[blockingBits][k]);
         }
-        printf("\n");
+        printf("\n");*/
 
         n->childMap[blockingBits] = malloc(sizeof(int) * (arrLen));
         for (int k = 1; k < arrLen; k++) {
@@ -105,4 +107,52 @@ void nmgRecastFrom(NodeMemory nm, void * grid, int nodeID) {
     for (int k = children[0]-1; k > 0; k++) {
         nmgRecastFrom(nm, grid, children[k]);
     }
+}
+
+void nmFlatten(NodeMemory nm, FILE * stream) {
+    fwrite(&(nm->nNodes), sizeof(int), 1, stream);
+
+    for (int k = 0; k < nm->nNodes; k++) {
+        nFlatten(nm->matrix[k], stream);
+    }
+
+    return;
+}
+
+static void nFlatten(Node n, FILE * stream) {
+    fwrite(&(n->firstTile), sizeof(xyPos), 1, stream);
+    fwrite(&(n->segmentLength), sizeof(int), 1, stream);
+    int maxBlockingBits = getMaxBlockingBits(n);
+    for (int blockingBits = 0; blockingBits < maxBlockingBits; blockingBits++) {
+        int * children = n->childMap[blockingBits];
+        fwrite(children, sizeof(int), children[0]+1, stream);
+    }
+}
+
+NodeMemory nmUnflatten(FILE * stream) {
+    NodeMemory nm = malloc(sizeof(struct nodeMemory));
+    fread(&(nm->nNodes), sizeof(int), 1, stream);
+    nm->matrix = malloc(sizeof(Node) * nm->nNodes);
+    for (int k = 0; k < nm->nNodes; k++) {
+        nm->matrix[k] = nUnflatten(stream);
+    }
+    return nm;
+}
+
+static Node nUnflatten(FILE * stream) {
+    Node n = malloc(sizeof(struct node));
+    fread(&(n->firstTile), sizeof(xyPos), 1, stream);
+    fread(&(n->segmentLength), sizeof(int), 1, stream);
+    int maxBlockingBits = getMaxBlockingBits(n);
+    for (int blockingBits = 0; blockingBits < maxBlockingBits; blockingBits++) {
+        int arrLen = 0;
+        fread(&arrLen, sizeof(int), 1, stream);
+        int * children = malloc(sizeof(int) * arrLen + 1);
+        children[0] = arrLen;
+        if (arrLen > 0) {
+            fread(children+1, sizeof(int), arrLen, stream);
+        }
+        n->childMap[blockingBits] = children;
+    }
+    return n;
 }
