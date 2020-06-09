@@ -116,6 +116,7 @@ static void nDestroy(Node n) {
 }
 
 void nmgRecast(NodeMemory nm, void * grid) {
+    printf("Called nmgRecast w/ NM %p, grid %p\n", nm, grid);
     nmgRecastFrom(nm, grid, 0);
 }
 

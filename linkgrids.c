@@ -1,8 +1,12 @@
 #include "poses.h"
 #include "grids.h"
 
+void * gridCreate(void * callbackFunc) {
+    return callbackFunc;
+}
+
 int tLookup(void * grid, xyPos xy) {
-    return 0;
+    return tDiagLookups(grid, xy, 1);
 }
 
 unsigned int tLookups(void * grid, xyPos * poses, int len) {
@@ -10,5 +14,6 @@ unsigned int tLookups(void * grid, xyPos * poses, int len) {
 }
 
 unsigned int tDiagLookups(void * grid, xyPos source, int len) {
-    return 0;
+    int (*callback)(int x, int y, int segmentLen) = grid;
+    return callback(source.x, source.y, len);
 }

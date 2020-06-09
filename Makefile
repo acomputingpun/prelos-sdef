@@ -1,15 +1,18 @@
 CC = gcc
-CFLAGS = -Wall -Werror -c -lm -fsanitize=address
-ALLO = wedges.o tiles.o poses.o nodes.o wdicts.o
+CFLAGS = -Wall -Werror -c -lm -fPIC
+ALLO = wedges.o tiles.o poses.o nodes.o wdicts.o wrapper.o
 
 prelos: ${ALLO} prelos.o localgrids.o
-	${CC} -o prelos prelos.o ${ALLO} localgrids.o -lm -fsanitize=address
+	${CC} -o prelos prelos.o ${ALLO} localgrids.o -lm
 
 shared: ${ALLO} linkgrids.o
 	${CC} -o prelos.so -shared ${ALLO} linkgrids.o -lm
 
 prelos.o: prelos.c poses.h wedges.h rays.h tiles.h nodes.h
 	${CC} ${CFLAGS} prelos.c
+
+wrapper.o: wrapper.c poses.h wedges.h rays.h tiles.h nodes.h
+	${CC} ${CFLAGS} wrapper.c
 
 nodes.o: nodes.c nodes.h wedges.h grids.h tiles.h poses.h rays.h
 	${CC} ${CFLAGS} nodes.c
