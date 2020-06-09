@@ -33,7 +33,6 @@ static inline int wsContainsInclusive(wedgeSpec ws, ray edge) {
 
 // ---
 
-typedef struct wedge * Wedge;
 struct wedge {
     int wedgeID;
 
@@ -50,19 +49,20 @@ struct wedge {
 };
 
 typedef struct wedgeSpecList * WedgeSpecList;
-
-typedef struct wedgeDict * WedgeDict;
-WedgeDict wdiCreate(Octant oct);
-void wdiDestroy(WedgeDict self);
-void wdiPrint(WedgeDict self);
-
-Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec);
-Wedge wdiLookupIndex(WedgeDict self, int wedgeID);
-void wPrint(Wedge self);
-
-void wRecursiveTraverse(Octant oct, WedgeDict wdi, int maxDepth);
-void wdiMergeEquivalent(WedgeDict wdi);
-
-int wdiNumWedges(WedgeDict wdi);
-
 #define getMaxBlockingBits(w) (1 << w->segmentLength)
+
+typedef struct wedge * Wedge;
+typedef struct wedgeDict * WedgeDict;
+
+Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec);
+void wPrint(Wedge self);
+void wDestroy(Wedge self);
+
+int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl);
+int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2);
+int wEqualsSpec(Wedge self, wedgeSpec spec);
+
+void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth);
+
+void wsPrint(wedgeSpec ws);
+void wslPrint(WedgeSpecList self);

@@ -6,13 +6,12 @@
 #include "rays.h"
 #include "tiles.h"
 #include "wedges.h"
+#include "wdicts.h"
 
 #define wedgeCWTile(wedge) (wedge->cwEdge)
 #define wedgeCCWTile(wedge) (wedge->ccwEdge)
 
 #define hashSpec(spec) ((37 * hashRay(spec.cwEdge)) ^ (101*hashRay(spec.ccwEdge)))
-
-typedef struct wdRadix * WDRadix;
 
 struct wedgeSpecList {
     wedgeSpec data;
@@ -20,42 +19,15 @@ struct wedgeSpecList {
 };
 static WedgeSpecList wslPush(WedgeSpecList self, wedgeSpec data);
 
-struct wedgeDict {
-    int nRadixes;
-    int nWedges;
-    int indexArraySize;
-    WDRadix * byDiagIDs;
-    Wedge * byIndex;
-};
-struct wdRadix {
-    int size;
-    Wedge * byHashes;
-    int d_collisions;
-    int d_elements;
-};
-
-static Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec);
-static void wDestroy(Wedge self);
-static int wdiNextWedgeID(WedgeDict wdi);
-
-static WDRadix wdiRadixCreate(Octant oct, int diagID);
-static void wdiRadixDestroy(WDRadix self);
-static void wdiRadixPrint(WDRadix self);
-
 static WedgeSpecList wBitsToChildSpecs(Wedge wedge, unsigned int blockingBits);
 static int wslLength(WedgeSpecList self);
-
-void wsPrint(wedgeSpec ws);
-void wslPrint(WedgeSpecList self);
-
-static void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth);
 static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits);
 
-static int wEqualsSpec(Wedge self, wedgeSpec spec) {
+int wEqualsSpec(Wedge self, wedgeSpec spec) {
     return rayEquals(self->cwEdge, spec.cwEdge) && rayEquals(self->ccwEdge, spec.ccwEdge) && (self->diagID == spec.diagID);
 }
 
-static Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec) {
+Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec) {
     Wedge self = malloc(sizeof(struct wedge));
     self->cwEdge = spec.cwEdge;
     self->ccwEdge = spec.ccwEdge;
@@ -66,132 +38,20 @@ static Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec) {
     self->segmentLength = (self->firstTile.x - lastTile.x) + 1;
 
     self->wedgeID = wdiNextWedgeID(wdi);
-    wdi->byIndex[self->wedgeID] = self;
     self->mergedID = self->wedgeID;
 
     self->childMap = malloc(sizeof(int *) * getMaxBlockingBits(self) );
     return self;
 }
-static void wDestroy(Wedge self) {
+void wDestroy(Wedge self) {
     free(self);
-}
-
-static int wdiNextWedgeID(WedgeDict wdi){
-    if (wdi->nWedges == wdi->indexArraySize) {
-        wdi->indexArraySize *= 2;
-        wdi->byIndex = realloc(wdi->byIndex, sizeof(Wedge) * wdi->indexArraySize);
-    }
-    return wdi->nWedges++;
-}
-
-WedgeDict wdiCreate(Octant oct) {
-    WedgeDict self = malloc(sizeof(struct wedgeDict));
-    self->indexArraySize = 64;
-    self->nWedges = 0;
-    self->byIndex = malloc(sizeof(Wedge) * self->indexArraySize);
-    self->nRadixes = oct->nDiags;
-    self->byDiagIDs = malloc(sizeof(WDRadix) * self->nRadixes);
-    for (int diagID = 0; diagID < self->nRadixes; diagID++) {
-        self->byDiagIDs[diagID] = wdiRadixCreate(oct, diagID);
-    }
-    return self;
-}
-void wdiDestroy(WedgeDict self) {
-    for (int diagID = 0; diagID < self->nRadixes; diagID++) {
-        wdiRadixDestroy(self->byDiagIDs[diagID]);
-    }
-    free(self->byDiagIDs);
-    free(self);
-}
-void wdiPrint(WedgeDict self) {
-    printf("WedgeDict with %d diag radixes\n", self->nRadixes);
-    for (int diagID = 0; diagID < self->nRadixes; diagID++) {
-        wdiRadixPrint(self->byDiagIDs[diagID]);
-    }
-    return;
-}
-
-static WDRadix wdiRadixCreate(Octant oct, int diagID){
-    WDRadix self = malloc(sizeof(struct wdRadix));
-    self->size = ((1 << oct->diags[diagID].size) * (diagID+1)) >> 1;
-    self->byHashes = malloc(sizeof(Wedge) * self->size);
-    for (int k = 0; k < self->size; k++) {
-        self->byHashes[k] = NULL;
-    }
-
-    self->d_collisions = 0;
-    self->d_elements = 0;
-
-    return self;
-}
-static void wdiRadixDestroy(WDRadix self) {
-    for (int cur = 0; cur < self->size; cur++) {
-        if (self->byHashes[cur] != NULL) {
-            wDestroy(self->byHashes[cur]);
-        }
-    }
-    free(self->byHashes);
-    free(self);
-}
-static void wdiRadixPrint(WDRadix self) {
-    printf("Radix of size %d (%d elem, %d coll):", self->size, self->d_elements, self->d_collisions);
-    for (int cur = 0; cur < self->size; cur++) {
-        if (self->byHashes[cur] != NULL) {
-            printf("@");
-        } else {
-            printf(".");
-        }
-    }
-    printf("\n");
-    /*
-    for (int cur = 0; cur < self->size; cur++) {
-        if (self->byHashes[cur] != NULL) {
-            printf("  ");
-            wPrint(self->byHashes[cur]);
-            printf("\n");
-        }
-    }*/
 }
 
 ///
 
-static int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2);
 static int cmEquivalent(WedgeDict wdi, int * cm1, int * cm2);
-static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID);
 
-void wdiMergeEquivalent(WedgeDict wdi) {
-    for (int diagID = wdi->nRadixes-1; diagID >= 0; diagID--) {
-        wdiRadixMergeEquivalent(wdi, diagID);
-    }
-}
-
-int wdiNumWedges(WedgeDict wdi) {
-    return wdi->nWedges;
-}
-
-static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {
-    printf("Running through and merging from radix of diag %d\n", diagID);
-
-    WDRadix radix = wdi->byDiagIDs[diagID];
-    wdiRadixPrint(radix);
-
-    for (int curIndex = 0; curIndex < radix->size; curIndex++) {
-        Wedge curWedge = radix->byHashes[curIndex];
-        if (curWedge != NULL && curWedge->mergedID == curWedge->wedgeID) {
-            for (int otherIndex = curIndex+1; otherIndex < radix->size; otherIndex++) {
-                Wedge otherWedge = radix->byHashes[otherIndex];
-                if (otherWedge != NULL) {
-                    if (wEquivalent(wdi, curWedge, otherWedge)) {
-                        printf("    ...they are equivalent - merging!\n");
-                        otherWedge->mergedID = curWedge->mergedID;
-                    }
-                }
-            }
-        }
-    }
-}
-
-static int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2){
+int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2){
     printf("    Comparing wedges of ID %d and %d\n", w1->wedgeID, w2->wedgeID);
 
     if (w1->firstTile.x != w2->firstTile.x || w1->firstTile.y != w2->firstTile.y) {
@@ -224,33 +84,6 @@ static int cmEquivalent(WedgeDict wdi, int * cm1, int * cm2) {
 
 ///
 
-Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
-    WDRadix radix = self->byDiagIDs[spec.diagID];
-
-    int hash = hashSpec(spec);
-    for (int cur = hash % radix->size; ; cur = (cur+1) % radix->size) {
-        if (radix->byHashes[cur] == NULL) {
-            radix->byHashes[cur] = wCreate(oct, self, spec);
-            radix->d_elements += 1;
-            if (cur != hash % radix->size) {
-                radix->d_collisions += 1;
-            }
-            return radix->byHashes[cur];
-        } else if (wEqualsSpec(radix->byHashes[cur], spec)) {
-            return radix->byHashes[cur];
-        } else if (cur > radix->size) {
-            return NULL;
-        }
-    }
-    return NULL;
-}
-
-Wedge wdiLookupIndex(WedgeDict self, int wedgeID) {
-//    printf("looking up index %d\n", wedgeID);
-//    printf("sbi %p\n", self->byIndex);
-    return self->byIndex[wedgeID];
-}
-
 static inline ray tileToCWRay(xyPos tile) {
     ray cwEdge;
     cwEdge.x = (tile.x * 2) + 1;
@@ -279,14 +112,7 @@ int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl) {
     return output;
 }
 
-void wRecursiveTraverse(Octant oct, WedgeDict wdi, int maxDepth) {
-    for (int wedgeID = 0; wedgeID < wdi->nWedges; wedgeID++) {
-        wTraverse(oct, wdi, wdiLookupIndex(wdi, wedgeID), maxDepth);
-    }
-    printf("DONE recursive traverse to depth %d\n", maxDepth);
-}
-
-static void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth) {
+void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth) {
     printf("TRAVERSING: ");
     wPrint(w);
     printf("\n");

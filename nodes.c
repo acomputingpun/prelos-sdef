@@ -6,6 +6,7 @@
 #include "rays.h"
 #include "tiles.h"
 #include "wedges.h"
+#include "wdicts.h"
 #include "grids.h"
 #include "nodes.h"
 

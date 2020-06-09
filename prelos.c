@@ -5,6 +5,7 @@
 #include "tiles.h"
 #include "rays.h"
 #include "wedges.h"
+#include "wdicts.h"
 #include "nodes.h"
 
 #include "grids.h"
@@ -19,13 +20,9 @@ void test() {
     WedgeDict wdi = wdiCreate(o);
     wdiPrint(wdi);
 
-    wdiLookup(o, wdi, wsInitial());
-
-    wdiPrint(wdi);
-
     printf("Running recursive traverse!\n");
 
-    wRecursiveTraverse(o, wdi, oDepth-1);
+    wdiBuild(o, wdi, oDepth-1);
 
     wdiMergeEquivalent(wdi);
 
@@ -86,9 +83,7 @@ void testRecast() {
 
     printf("Running recursive traverse on wdi!\n");
 
-    wdiLookup(oct, wdi, wsInitial());
-
-    wRecursiveTraverse(oct, wdi, oDepth-1);
+    wdiBuild(oct, wdi, oDepth-1);
 
     wdiPrint(wdi);
 
