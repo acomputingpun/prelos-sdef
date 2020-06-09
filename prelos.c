@@ -66,7 +66,9 @@ void testRecast() {
     Octant oct = octCreate(oDepth);
     octPrint(oct);
 
-    for (int nDiag = 0; nDiag <= oct->nDiags; nDiag++) {
+    printf("Done creating octant, now filling grid!\n");
+
+    for (int nDiag = 0; nDiag < oct->nDiags; nDiag++) {
         diagonal diag = oct->diags[nDiag];
         tDiagSet(grid, oct->tilePoses[diag.firstTile], diag.size, '.');
     }
@@ -91,12 +93,59 @@ void testRecast() {
 
     NodeMemory nm = nmCreate(wdi);
 
+    printf("Done creating node-memory, now printing:\n");
+
     nmPrint(nm);
 }
 
+void testMemory() {
+    int oDepth = 7;
+
+    printf("Testing octant!\n");
+
+    Octant oct = octCreate(oDepth);
+    octPrint(oct);
+    octDestroy(oct);
+
+    printf("Testing grid!\n");
+
+    void * grid = setupGrid();
+    gridPrint(grid);
+    gridDestroy(grid);
+
+    printf("Testing empty WDI!\n");
+
+    oct = octCreate(oDepth);
+    WedgeDict wdi = wdiCreate(oct);
+    wdiPrint(wdi);
+    wdiDestroy(wdi);
+    octDestroy(oct);
+
+
+    printf("Testing full WDI!\n");
+
+    oct = octCreate(oDepth);
+    wdi = wdiCreate(oct);
+    wdiPrint(wdi);
+    wdiBuild(oct, wdi, oDepth-1);
+    wdiDestroy(wdi);
+    octDestroy(oct);
+
+    printf("Testing WDI->NodeMemory\n");
+
+    oct = octCreate(oDepth);
+    wdi = wdiCreate(oct);
+    wdiPrint(wdi);
+    wdiBuild(oct, wdi, oDepth-1);
+    NodeMemory nm = nmCreate(wdi);
+    nmDestroy(nm);
+    octDestroy(oct);
+}
+
+
 int main (int argc, char** argv) {
 //    testGrid();
-    testRecast();
-//    test();
+//    testRecast();
+    testMemory();
     return 0;
 }

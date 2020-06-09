@@ -11,17 +11,50 @@
 #define wedgeCWTile(wedge) (wedge->cwEdge)
 #define wedgeCCWTile(wedge) (wedge->ccwEdge)
 
-#define hashSpec(spec) ((37 * hashRay(spec.cwEdge)) ^ (101*hashRay(spec.ccwEdge)))
-
+typedef struct wedgeSpecList * WedgeSpecList;
 struct wedgeSpecList {
     wedgeSpec data;
     WedgeSpecList next;
 };
+
 static WedgeSpecList wslPush(WedgeSpecList self, wedgeSpec data);
+static void wslDestroy(WedgeSpecList self);
+static void wslPrint(WedgeSpecList self);
 
 static WedgeSpecList wBitsToChildSpecs(Wedge wedge, unsigned int blockingBits);
 static int wslLength(WedgeSpecList self);
+static int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl);
+
 static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits);
+
+
+static WedgeSpecList wslPush(WedgeSpecList self, wedgeSpec data) {
+    WedgeSpecList new = malloc(sizeof(struct wedgeSpecList));
+    new->data = data;
+    new->next = self;
+    return new;
+}
+
+static void wslDestroy(WedgeSpecList self) {
+    if (self != NULL) {
+        wslDestroy(self->next);
+        free(self);
+    }
+}
+static void wslPrint(WedgeSpecList self) {
+    while (self != NULL) {
+        wsPrint(self->data);
+        self = self->next;
+    }
+}
+static int wslLength(WedgeSpecList self) {
+    if (self == NULL) {
+        return 0;
+    } else {
+        return 1+wslLength(self->next);
+    }
+
+}
 
 int wEqualsSpec(Wedge self, wedgeSpec spec) {
     return rayEquals(self->cwEdge, spec.cwEdge) && rayEquals(self->ccwEdge, spec.ccwEdge) && (self->diagID == spec.diagID);
@@ -44,6 +77,11 @@ Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec) {
     return self;
 }
 void wDestroy(Wedge self) {
+    unsigned int maxBlockingBits = getMaxBlockingBits(self);
+    for (int blockingBits = 0; blockingBits < maxBlockingBits; blockingBits++) {
+        free(self->childMap[blockingBits]);
+    }
+    free(self->childMap);
     free(self);
 }
 
@@ -97,7 +135,7 @@ static inline ray tileToCCWRay(xyPos tile) {
     return ccwEdge;
 }
 
-int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl) {
+static int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl) {
     int * output = malloc(sizeof(int) * (wslLength(wsl)+1) );
     output[0] = 0;
     WedgeSpecList old = wsl;
@@ -139,6 +177,9 @@ static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int bloc
     wslPrint(wsl);
     printf("|>\n");
     w->childMap[blockingBits] = wslToWedges(oct, wdi, wsl);
+    if (0) {
+        wslDestroy(wsl);
+    }
 }
 
 static WedgeSpecList wBitsToChildSpecs(Wedge wedge, unsigned int blockingBits) {
@@ -182,20 +223,6 @@ static WedgeSpecList wBitsToChildSpecs(Wedge wedge, unsigned int blockingBits) {
     return output;
 }
 
-static WedgeSpecList wslPush(WedgeSpecList self, wedgeSpec data) {
-    WedgeSpecList new = malloc(sizeof(struct wedgeSpecList));
-    new->data = data;
-    new->next = self;
-    return new;
-}
-
-static int wslLength(WedgeSpecList self) {
-    if (self == NULL) {
-        return 0;
-    } else {
-        return 1+wslLength(self->next);
-    }
-}
 
 /*
 static void wslSplit(WedgeSpecList self, ray splitEdge) {
@@ -251,11 +278,4 @@ void wsPrint(wedgeSpec ws) {
     printf("-");
     rayPrint(ws.ccwEdge);
     printf(")");
-}
-
-void wslPrint(WedgeSpecList self) {
-    while (self != NULL) {
-        wsPrint(self->data);
-        self = self->next;
-    }
 }

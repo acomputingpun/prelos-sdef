@@ -22,7 +22,8 @@ struct node {
     int ** childMap;
 };
 
-static void nCreate (NodeMemory nm, WedgeDict wdi, int wIndex);
+static void nCreate(NodeMemory nm, WedgeDict wdi, int wIndex);
+static void nDestroy(Node n);
 static void nFlatten(Node n, FILE * stream);
 static Node nUnflatten(FILE * stream);
 
@@ -51,9 +52,17 @@ NodeMemory nmCreate(WedgeDict wdi) {
             nCreate(self, wdi, wIndex);
         }
     }
+
+    wdiDestroy(wdi);
+
     return self;
 }
 void nmDestroy(NodeMemory nm){
+    for (int nodeID = 0; nodeID < nm->nNodes; nodeID++) {
+        nDestroy(nm->matrix[nodeID]);
+    }
+    free(nm->matrix);
+    free(nm);
     return;
 }
 void nmPrint(NodeMemory nm){
@@ -69,15 +78,15 @@ static void nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
 
     n->segmentLength = w->segmentLength;
     n->firstTile = w->firstTile;
-    n->childMap = malloc(sizeof(int) * getMaxBlockingBits(w));
+    n->childMap = malloc(sizeof(int *) * getMaxBlockingBits(w));
 
     printf("  -Got firstTile (%d, %d), segmentLen %d, maxBB %x!\n", n->firstTile.x, n->firstTile.y, n->segmentLength, getMaxBlockingBits(w));
 
     for (unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(w); blockingBits++) {
 
-//        printf("   -Copying BlockingBits |%x|\n", blockingBits);
-
         int arrLen = w->childMap[blockingBits][0]+1;
+
+        printf("   -Copying BlockingBits |%x| (arrLen %d)\n", blockingBits, arrLen-1);
 
 /*        printf("   -ArrLen is %d\n", arrLen);
         printf("   -Arr is:");
@@ -88,13 +97,22 @@ static void nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
 
         n->childMap[blockingBits] = malloc(sizeof(int) * (arrLen));
         for (int k = 1; k < arrLen; k++) {
+            printf("    -Copying k %d\n", k);
             int childWedgeID = w->childMap[blockingBits][k];
             Wedge childWedge = wdiLookupIndex(wdi, wdiLookupIndex(wdi, childWedgeID)->mergedID);
             n->childMap[blockingBits][k] = childWedge->finalNodeID;
         }
+        printf("   -done w/ bb %x\n", blockingBits);
     }
-
+    printf("  -Done copying!\n");
     nm->matrix[w->finalNodeID] = n;
+}
+static void nDestroy(Node n) {
+    for(unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(n); blockingBits++){
+        free(n->childMap[blockingBits]);
+    }
+    free(n->childMap);
+    free(n);
 }
 
 void nmgRecast(NodeMemory nm, void * grid) {

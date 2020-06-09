@@ -8,8 +8,6 @@
 #include "wedges.h"
 #include "wdicts.h"
 
-#define hashSpec(spec) ((37 * hashRay(spec.cwEdge)) ^ (101*hashRay(spec.ccwEdge)))
-
 typedef struct wdRadix * WDRadix;
 
 struct wedgeDict {
@@ -60,6 +58,7 @@ void wdiDestroy(WedgeDict self) {
         wdiRadixDestroy(self->byDiagIDs[diagID]);
     }
     free(self->byDiagIDs);
+    free(self->byIndex);
     free(self);
 }
 void wdiPrint(WedgeDict self) {

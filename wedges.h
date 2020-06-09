@@ -4,6 +4,7 @@ struct wedgeSpec {
     ray cwEdge;
     ray ccwEdge;
 };
+
 static inline wedgeSpec wsCreate(int diagID, ray cwEdge, ray ccwEdge) {
     wedgeSpec self;
     self.diagID = diagID;
@@ -31,6 +32,8 @@ static inline int wsContainsInclusive(wedgeSpec ws, ray edge) {
     return 1;
 }
 
+#define hashSpec(spec) ((37 * hashRay(spec.cwEdge)) ^ (101*hashRay(spec.ccwEdge)))
+
 // ---
 
 struct wedge {
@@ -48,7 +51,6 @@ struct wedge {
     int finalNodeID;
 };
 
-typedef struct wedgeSpecList * WedgeSpecList;
 #define getMaxBlockingBits(w) (1 << w->segmentLength)
 
 typedef struct wedge * Wedge;
@@ -58,11 +60,9 @@ Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec);
 void wPrint(Wedge self);
 void wDestroy(Wedge self);
 
-int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl);
 int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2);
 int wEqualsSpec(Wedge self, wedgeSpec spec);
 
 void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth);
 
 void wsPrint(wedgeSpec ws);
-void wslPrint(WedgeSpecList self);

@@ -1,9 +1,9 @@
 CC = gcc
-CFLAGS = -Wall -Werror -c -lm
+CFLAGS = -Wall -Werror -c -lm -fsanitize=address
 ALLO = wedges.o tiles.o poses.o nodes.o wdicts.o
 
 prelos: ${ALLO} prelos.o localgrids.o
-	${CC} -o prelos prelos.o ${ALLO} localgrids.o -lm
+	${CC} -o prelos prelos.o ${ALLO} localgrids.o -lm -fsanitize=address
 
 shared: ${ALLO} linkgrids.o
 	${CC} -o prelos.so -shared ${ALLO} linkgrids.o -lm
