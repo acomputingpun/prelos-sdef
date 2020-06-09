@@ -46,6 +46,7 @@ struct wedge {
 
     int ** childMap;
     int mergedID;
+    int finalNodeID;
 };
 
 typedef struct wedgeSpecList * WedgeSpecList;

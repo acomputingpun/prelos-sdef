@@ -220,8 +220,6 @@ static int cmEquivalent(WedgeDict wdi, int * cm1, int * cm2) {
     return 1;
 }
 
-
-
 ///
 
 Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
@@ -433,5 +431,3 @@ void wslPrint(WedgeSpecList self) {
         self = self->next;
     }
 }
-
-///

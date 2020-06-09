@@ -1,15 +1,18 @@
 CC = gcc
 CFLAGS = -Wall -c -lm
-ALLO = wedges.o tiles.o poses.o
+ALLO = wedges.o tiles.o poses.o nodes.o
 
 prelos: ${ALLO} prelos.o localgrids.o
-	${CC} -o prelos prelos.o ${ALLO} localgrids.o -lm 
+	${CC} -o prelos prelos.o ${ALLO} localgrids.o -lm
 
 shared: ${ALLO} linkgrids.o
 	${CC} -o prelos.so -shared ${ALLO} linkgrids.o -lm
 
-prelos.o: prelos.c poses.h wedges.h rays.h tiles.h
+prelos.o: prelos.c poses.h wedges.h rays.h tiles.h nodes.h
 	${CC} ${CFLAGS} prelos.c
+
+nodes.o: nodes.c nodes.h wedges.h grids.h
+	${CC} ${CFLAGS} nodes.c
 
 wedges.o: wedges.c wedges.h rays.h poses.h
 	${CC} ${CFLAGS} wedges.c
