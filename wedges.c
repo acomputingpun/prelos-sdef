@@ -12,8 +12,6 @@
 
 #define hashSpec(spec) ((37 * hashRay(spec.cwEdge)) ^ (101*hashRay(spec.ccwEdge)))
 
-#define getMaxBlockingBits(w) (1 << w->segmentLength)
-
 typedef struct wdRadix * WDRadix;
 
 struct wedgeSpecList {
@@ -165,6 +163,10 @@ void wdiMergeEquivalent(WedgeDict wdi) {
     for (int diagID = wdi->nRadixes-1; diagID >= 0; diagID--) {
         wdiRadixMergeEquivalent(wdi, diagID);
     }
+}
+
+int wdiNumWedges(WedgeDict wdi) {
+    return wdi->nWedges;
 }
 
 static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {

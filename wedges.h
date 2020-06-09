@@ -62,3 +62,7 @@ void wPrint(Wedge self);
 
 void wRecursiveTraverse(Octant oct, WedgeDict wdi, int maxDepth);
 void wdiMergeEquivalent(WedgeDict wdi);
+
+int wdiNumWedges(WedgeDict wdi);
+
+#define getMaxBlockingBits(w) (1 << w->segmentLength)

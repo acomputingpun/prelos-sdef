@@ -5,6 +5,7 @@
 #include "tiles.h"
 #include "rays.h"
 #include "wedges.h"
+#include "nodes.h"
 
 #include "grids.h"
 #include "localgrids.h"
@@ -61,9 +62,11 @@ void testGrid() {
 }
 
 void testRecast() {
+    int oDepth = 3;
+
     void * grid = setupGrid();
 
-    Octant oct = octCreate(8);
+    Octant oct = octCreate(oDepth);
     octPrint(oct);
 
     for (int nDiag = 0; nDiag <= oct->nDiags; nDiag++) {
@@ -71,15 +74,34 @@ void testRecast() {
         tDiagSet(grid, oct->tilePoses[diag.firstTile], diag.size, '.');
     }
 
-    WedgeDict wdi = wdiCreate(o);
-    wdiPrint(wdi);
+    xyPos x = {2, 0};
+    tSet(grid, x, '#');
 
     gridPrint(grid);
 
+    printf("Creating wdi!\n");
+
+    WedgeDict wdi = wdiCreate(oct);
+    wdiPrint(wdi);
+
+    printf("Running recursive traverse on wdi!\n");
+
+    wdiLookup(oct, wdi, wsInitial());
+
+    wRecursiveTraverse(oct, wdi, oDepth-1);
+
+    wdiPrint(wdi);
+
+    printf("Creating node-memory from wdi!\n");
+
+    NodeMemory nm = nmCreate(wdi);
+
+    nmPrint(nm);
 }
 
 int main (int argc, char** argv) {
-    testGrid();
+//    testGrid();
+    testRecast();
 //    test();
     return 0;
 }

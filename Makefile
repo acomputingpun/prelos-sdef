@@ -11,7 +11,7 @@ shared: ${ALLO} linkgrids.o
 prelos.o: prelos.c poses.h wedges.h rays.h tiles.h nodes.h
 	${CC} ${CFLAGS} prelos.c
 
-nodes.o: nodes.c nodes.h wedges.h grids.h
+nodes.o: nodes.c nodes.h wedges.h grids.h tiles.h poses.h rays.h
 	${CC} ${CFLAGS} nodes.c
 
 wedges.o: wedges.c wedges.h rays.h poses.h
