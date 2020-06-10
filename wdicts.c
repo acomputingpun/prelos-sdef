@@ -124,10 +124,10 @@ int wdiNumWedges(WedgeDict wdi) {
 }
 
 static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {
-    printf("Running through and merging from radix of diag %d\n", diagID);
+//    printf("Running through and merging from radix of diag %d\n", diagID);
 
     WDRadix radix = wdi->byDiagIDs[diagID];
-    wdiRadixPrint(radix);
+//    wdiRadixPrint(radix);
 
     for (int curIndex = 0; curIndex < radix->size; curIndex++) {
         Wedge curWedge = radix->byHashes[curIndex];
@@ -136,7 +136,7 @@ static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {
                 Wedge otherWedge = radix->byHashes[otherIndex];
                 if (otherWedge != NULL) {
                     if (wEquivalent(wdi, curWedge, otherWedge)) {
-                        printf("    ...they are equivalent - merging!\n");
+//                        printf("    ...they are equivalent - merging!\n");
                         otherWedge->mergedID = curWedge->mergedID;
                     }
                 }
@@ -199,5 +199,5 @@ static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth) {
     for (int wedgeID = 0; wedgeID < wdi->nWedges; wedgeID++) {
         wTraverse(oct, wdi, wdiLookupIndex(wdi, wedgeID), maxDepth);
     }
-    printf("DONE recursive traverse to depth %d\n", maxDepth);
+//    printf("DONE recursive traverse to depth %d\n", maxDepth);
 }

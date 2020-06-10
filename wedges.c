@@ -90,7 +90,7 @@ void wDestroy(Wedge self) {
 static int cmEquivalent(WedgeDict wdi, int * cm1, int * cm2);
 
 int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2){
-    printf("    Comparing wedges of ID %d and %d\n", w1->wedgeID, w2->wedgeID);
+//    printf("    Comparing wedges of ID %d and %d\n", w1->wedgeID, w2->wedgeID);
 
     if (w1->firstTile.x != w2->firstTile.x || w1->firstTile.y != w2->firstTile.y) {
         return 0;
@@ -107,7 +107,7 @@ int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2){
 }
 
 static int cmEquivalent(WedgeDict wdi, int * cm1, int * cm2) {
-    printf("      Comparing childmaps (ptrs %p and %p) for equivalence!\n", cm1, cm2);
+//    printf("      Comparing childmaps (ptrs %p and %p) for equivalence!\n", cm1, cm2);
     if (cm1[0] != cm2[0]) {
         return 0;
     } else {
@@ -151,12 +151,12 @@ static int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl) {
 }
 
 void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth) {
-    printf("TRAVERSING: ");
-    wPrint(w);
-    printf("\n");
+//    printf("TRAVERSING: ");
+//    wPrint(w);
+//    printf("\n");
 
     if (w->diagID >= maxDepth) {
-        printf("  -- Wedge at diag %d, too far!  Got wsl (nothing) for all children!\n", w->diagID);
+//        printf("  -- Wedge at diag %d, too far!  Got wsl (nothing) for all children!\n", w->diagID);
     }
 
     unsigned int maxBlockingBits = getMaxBlockingBits(w);
@@ -167,15 +167,15 @@ void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth) {
             wInnerTraverse(oct, wdi, w, blockingBits);
         }
     }
-    printf("  DONE traverse of %d\n", w->wedgeID);
+//    printf("  DONE traverse of %d\n", w->wedgeID);
 }
 
 static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits) {
-    printf("  -- BlockingBits %x\n", blockingBits);
+//    printf("  -- BlockingBits %x\n", blockingBits);
     WedgeSpecList wsl = wBitsToChildSpecs(w, blockingBits);
-    printf("  -- Got wsl <|");
-    wslPrint(wsl);
-    printf("|>\n");
+//    printf("  -- Got wsl <|");
+//    wslPrint(wsl);
+//    printf("|>\n");
     w->childMap[blockingBits] = wslToWedges(oct, wdi, wsl);
     if (0) {
         wslDestroy(wsl);

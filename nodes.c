@@ -22,7 +22,7 @@ struct node {
     int ** childMap;
 };
 
-static void nCreate(NodeMemory nm, WedgeDict wdi, int wIndex);
+static size_t nCreate(NodeMemory nm, WedgeDict wdi, int wIndex);
 static void nDestroy(Node n);
 static void nPrint(Node n);
 static void nFlatten(Node n, FILE * stream);
@@ -30,12 +30,13 @@ static Node nUnflatten(FILE * stream);
 
 NodeMemory nmCreate(WedgeDict wdi) {
     NodeMemory self = malloc(sizeof(struct nodeMemory));
+    size_t datasize = 0;
     self->nNodes = 0;
 
     int nWedges = wdiNumWedges(wdi);
 
     for (int wIndex = 0; wIndex < nWedges; wIndex++) {
-        printf(" -Visiting wedge %d!\n", wIndex);
+//        printf(" -Visiting wedge %d!\n", wIndex);
         Wedge w = wdiLookupIndex(wdi, wIndex);
         if (w->mergedID == w->wedgeID) {
             w->finalNodeID = self->nNodes;
@@ -43,18 +44,20 @@ NodeMemory nmCreate(WedgeDict wdi) {
         }
     }
 
-    printf("-Done initial runthrough\n");
+//    printf("-Done initial runthrough\n");
     self->matrix = malloc(sizeof(Node *) * self->nNodes);
 
     for (int wIndex = 0; wIndex < nWedges; wIndex++) {
-        printf(" -Revisiting wedge %d!\n", wIndex);
+//        printf(" -Revisiting wedge %d!\n", wIndex);
         Wedge w = wdiLookupIndex(wdi, wIndex);
         if (w->mergedID == w->wedgeID) {
-            nCreate(self, wdi, wIndex);
+            datasize += nCreate(self, wdi, wIndex);
         }
     }
 
     wdiDestroy(wdi);
+
+    printf("Final datasize: %ld bytes\n", datasize);
 
     return self;
 }
@@ -75,23 +78,27 @@ void nmPrint(NodeMemory nm){
 }
 
 
-static void nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
-    Node n = malloc(sizeof(struct node));
+static size_t nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
+    size_t datasize = 0;
     Wedge w = wdiLookupIndex(wdi, wIndex);
+    Node n = malloc(sizeof(struct node));
+    datasize += sizeof(struct node);
 
-    printf("  -Just called nCreate on wedge index %d!\n", wIndex);
+
+//    printf("  -Just called nCreate on wedge index %d!\n", wIndex);
 
     n->segmentLength = w->segmentLength;
     n->firstTile = w->firstTile;
     n->childMap = malloc(sizeof(int *) * getMaxBlockingBits(w));
+    datasize += sizeof(int *) * getMaxBlockingBits(w);
 
-    printf("  -Got firstTile (%d, %d), segmentLen %d, maxBB %x!\n", n->firstTile.x, n->firstTile.y, n->segmentLength, getMaxBlockingBits(w));
+//    printf("  -Got firstTile (%d, %d), segmentLen %d, maxBB %x!\n", n->firstTile.x, n->firstTile.y, n->segmentLength, getMaxBlockingBits(w));
 
     for (unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(w); blockingBits++) {
 
         int arrLen = w->childMap[blockingBits][0]+1;
 
-        printf("   -Copying BlockingBits |%x| (arrLen %d)\n", blockingBits, arrLen-1);
+//        printf("   -Copying BlockingBits |%x| (arrLen %d)\n", blockingBits, arrLen-1);
 
 /*        printf("   -ArrLen is %d\n", arrLen);
         printf("   -Arr is:");
@@ -101,17 +108,19 @@ static void nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
         printf("\n");*/
 
         n->childMap[blockingBits] = malloc(sizeof(int) * (arrLen));
+        datasize += sizeof(int) * (arrLen);
         n->childMap[blockingBits][0] = arrLen-1;
         for (int k = 1; k < arrLen; k++) {
-            printf("    -Copying k %d\n", k);
+//            printf("    -Copying k %d\n", k);
             int childWedgeID = w->childMap[blockingBits][k];
             Wedge childWedge = wdiLookupIndex(wdi, wdiLookupIndex(wdi, childWedgeID)->mergedID);
             n->childMap[blockingBits][k] = childWedge->finalNodeID;
         }
-        printf("   -done w/ bb %x\n", blockingBits);
+//        printf("   -done w/ bb %x\n", blockingBits);
     }
-    printf("  -Done copying!\n");
+//    printf("  -Done copying!\n");
     nm->matrix[w->finalNodeID] = n;
+    return datasize;
 }
 static void nDestroy(Node n) {
     for(unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(n); blockingBits++){
@@ -133,15 +142,15 @@ static void nPrint(Node n) {
 
 
 void nmgRecast(NodeMemory nm, void * grid) {
-    printf("Called nmgRecast w/ NM %p, grid %p\n", nm, grid);
+//    printf("Called nmgRecast w/ NM %p, grid %p\n", nm, grid);
     nmgRecastFrom(nm, grid, 0);
 }
 
 void nmgRecastFrom(NodeMemory nm, void * grid, int nodeID) {
-    printf(" Recast: at node %d\n", nodeID);
+//    printf(" Recast: at node %d\n", nodeID);
     Node cur = nm->matrix[nodeID];
     int blockingBits = tDiagLookups(grid, cur->firstTile, cur->segmentLength);
-    printf(" Recast: Got blockingBits %x\n", blockingBits);
+//    printf(" Recast: Got blockingBits %x\n", blockingBits);
     int * children = cur->childMap[blockingBits];
     for (int k = children[0]; k > 0; k--) {
         nmgRecastFrom(nm, grid, children[k]);

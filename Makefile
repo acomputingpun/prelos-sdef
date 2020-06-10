@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Werror -c -lm -fPIC
+CFLAGS = -Wall -c -lm -fPIC
 ALLO = wedges.o tiles.o poses.o nodes.o wdicts.o wrapper.o
 
 prelos: ${ALLO} prelos.o localgrids.o

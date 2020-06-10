@@ -98,6 +98,22 @@ void testRecast() {
     nmgRecast(nm, grid);
 }
 
+void createNodes(int oDepth) {
+    printf("Creating node-memory with depth %d:", oDepth);
+    Octant oct = octCreate(oDepth);
+    WedgeDict wdi = wdiCreate(oct);
+    wdiBuild(oct, wdi, oDepth-1);
+    NodeMemory nm = nmCreate(wdi);
+    nmDestroy(nm);
+    octDestroy(oct);
+}
+
+void testSizes() {
+    for (int k = 1; k <= 30; k++) {
+        createNodes(k);
+    }
+}
+
 void testMemory() {
     int oDepth = 7;
 
@@ -145,7 +161,8 @@ void testMemory() {
 
 int main (int argc, char** argv) {
 //    testGrid();
-    testRecast();
+//    testRecast();
 //    testMemory();
+    testSizes();
     return 0;
 }
