@@ -28,8 +28,6 @@ void test() {
 
     wdiPrint(wdi);
 
-
-
     return;
 }
 
@@ -59,7 +57,7 @@ void testGrid() {
 }
 
 void testRecast() {
-    int oDepth = 7;
+    int oDepth = 3;
 
     void * grid = setupGrid();
 
@@ -96,6 +94,8 @@ void testRecast() {
     printf("Done creating node-memory, now printing:\n");
 
     nmPrint(nm);
+
+    nmgRecast(nm, grid);
 }
 
 void testMemory() {
@@ -145,7 +145,7 @@ void testMemory() {
 
 int main (int argc, char** argv) {
 //    testGrid();
-//    testRecast();
-    testMemory();
+    testRecast();
+//    testMemory();
     return 0;
 }

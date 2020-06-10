@@ -24,6 +24,7 @@ struct node {
 
 static void nCreate(NodeMemory nm, WedgeDict wdi, int wIndex);
 static void nDestroy(Node n);
+static void nPrint(Node n);
 static void nFlatten(Node n, FILE * stream);
 static Node nUnflatten(FILE * stream);
 
@@ -67,6 +68,10 @@ void nmDestroy(NodeMemory nm){
 }
 void nmPrint(NodeMemory nm){
     printf("Printing NodeMemory - it contains %d nodes!\n", nm->nNodes);
+    for (int nodeID = 0; nodeID < nm->nNodes; nodeID++) {
+        printf("%d:", nodeID);
+        nPrint(nm->matrix[nodeID]);
+    }
 }
 
 
@@ -96,6 +101,7 @@ static void nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
         printf("\n");*/
 
         n->childMap[blockingBits] = malloc(sizeof(int) * (arrLen));
+        n->childMap[blockingBits][0] = arrLen-1;
         for (int k = 1; k < arrLen; k++) {
             printf("    -Copying k %d\n", k);
             int childWedgeID = w->childMap[blockingBits][k];
@@ -114,6 +120,17 @@ static void nDestroy(Node n) {
     free(n->childMap);
     free(n);
 }
+static void nPrint(Node n) {
+    printf("Node (%d,%d) %d -> (%d,%d)\n", n->firstTile.x, n->firstTile.y, n->segmentLength, 1+n->firstTile.x-n->segmentLength, n->firstTile.y+n->segmentLength-1);
+    for(unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(n); blockingBits++){
+        printf("    %x | (", blockingBits);
+        for (int k = 1; k <= n->childMap[blockingBits][0]; k++) {
+            printf("%d, ", n->childMap[blockingBits][k]);
+        }
+        printf(")\n");
+    }
+}
+
 
 void nmgRecast(NodeMemory nm, void * grid) {
     printf("Called nmgRecast w/ NM %p, grid %p\n", nm, grid);
@@ -121,10 +138,12 @@ void nmgRecast(NodeMemory nm, void * grid) {
 }
 
 void nmgRecastFrom(NodeMemory nm, void * grid, int nodeID) {
+    printf(" Recast: at node %d\n", nodeID);
     Node cur = nm->matrix[nodeID];
     int blockingBits = tDiagLookups(grid, cur->firstTile, cur->segmentLength);
+    printf(" Recast: Got blockingBits %x\n", blockingBits);
     int * children = cur->childMap[blockingBits];
-    for (int k = children[0]-1; k > 0; k++) {
+    for (int k = children[0]; k > 0; k--) {
         nmgRecastFrom(nm, grid, children[k]);
     }
 }
