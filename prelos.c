@@ -22,7 +22,7 @@ void test() {
 
     printf("Running recursive traverse!\n");
 
-    wdiBuild(o, wdi, oDepth-1);
+    wdiBuild(o, wdi, oDepth-1, 8);
 
     wdiMergeEquivalent(wdi);
 
@@ -83,7 +83,7 @@ void testRecast() {
 
     printf("Running recursive traverse on wdi!\n");
 
-    wdiBuild(oct, wdi, oDepth-1);
+    wdiBuild(oct, wdi, oDepth-1, 8);
 
     wdiPrint(wdi);
 
@@ -98,19 +98,22 @@ void testRecast() {
     nmgRecast(nm, grid);
 }
 
-void createNodes(int oDepth) {
-    printf("Creating node-memory with depth %d:", oDepth);
+void createNodes(int oDepth, int autoDividePeriod) {
+    printf("Creating node-memory with ADP %d / depth %d:", autoDividePeriod, oDepth);
     Octant oct = octCreate(oDepth);
     WedgeDict wdi = wdiCreate(oct);
-    wdiBuild(oct, wdi, oDepth-1);
+    wdiBuild(oct, wdi, oDepth-1, autoDividePeriod);
     NodeMemory nm = nmCreate(wdi);
     nmDestroy(nm);
     octDestroy(oct);
 }
 
 void testSizes() {
-    for (int k = 1; k <= 30; k++) {
-        createNodes(k);
+    for (int adp = 5; adp <= 12; adp++) {
+        printf ("-- ADP %d\n", adp);
+        for (int k = 1; k <= 30; k++) {
+            createNodes(k, adp);
+        }
     }
 }
 
@@ -143,7 +146,7 @@ void testMemory() {
     oct = octCreate(oDepth);
     wdi = wdiCreate(oct);
     wdiPrint(wdi);
-    wdiBuild(oct, wdi, oDepth-1);
+    wdiBuild(oct, wdi, oDepth-1, 8);
     wdiDestroy(wdi);
     octDestroy(oct);
 
@@ -152,7 +155,7 @@ void testMemory() {
     oct = octCreate(oDepth);
     wdi = wdiCreate(oct);
     wdiPrint(wdi);
-    wdiBuild(oct, wdi, oDepth-1);
+    wdiBuild(oct, wdi, oDepth-1, 8);
     NodeMemory nm = nmCreate(wdi);
     nmDestroy(nm);
     octDestroy(oct);

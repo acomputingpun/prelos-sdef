@@ -30,7 +30,7 @@ static void wdiRadixPrint(WDRadix self);
 
 static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID);
 
-static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth);
+static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoDividePeriod);
 
 
 int wdiNextWedgeID(WedgeDict wdi){
@@ -190,14 +190,14 @@ static inline ray tileToCCWRay(xyPos tile) {
     return ccwEdge;
 }
 
-void wdiBuild(Octant oct, WedgeDict wdi, int maxDepth) {
+void wdiBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoDividePeriod) {
     wdiLookup(oct, wdi, wsInitial());
-    wdiIterativeBuild(oct, wdi, maxDepth);
+    wdiIterativeBuild(oct, wdi, maxDepth, autoDividePeriod);
 }
 
-static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth) {
+static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoDividePeriod) {
     for (int wedgeID = 0; wedgeID < wdi->nWedges; wedgeID++) {
-        wTraverse(oct, wdi, wdiLookupIndex(wdi, wedgeID), maxDepth);
+        wTraverse(oct, wdi, wdiLookupIndex(wdi, wedgeID), maxDepth, autoDividePeriod);
     }
 //    printf("DONE recursive traverse to depth %d\n", maxDepth);
 }

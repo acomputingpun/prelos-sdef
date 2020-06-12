@@ -24,8 +24,9 @@ static void wslPrint(WedgeSpecList self);
 static WedgeSpecList wBitsToChildSpecs(Wedge wedge, unsigned int blockingBits);
 static int wslLength(WedgeSpecList self);
 static int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl);
+static void wslSplit(WedgeSpecList self, ray splitEdge);
 
-static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits);
+static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits, int autoDividePeriod);
 
 
 static WedgeSpecList wslPush(WedgeSpecList self, wedgeSpec data) {
@@ -150,7 +151,7 @@ static int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl) {
     return output;
 }
 
-void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth) {
+void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth, int autoDividePeriod) {
 //    printf("TRAVERSING: ");
 //    wPrint(w);
 //    printf("\n");
@@ -164,18 +165,34 @@ void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth) {
         if (w->diagID >= maxDepth) {
             w->childMap[blockingBits] = wslToWedges(oct, wdi, NULL);
         } else {
-            wInnerTraverse(oct, wdi, w, blockingBits);
+            wInnerTraverse(oct, wdi, w, blockingBits, autoDividePeriod);
         }
     }
 //    printf("  DONE traverse of %d\n", w->wedgeID);
 }
 
-static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits) {
+static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits, int autoDividePeriod) {
 //    printf("  -- BlockingBits %x\n", blockingBits);
     WedgeSpecList wsl = wBitsToChildSpecs(w, blockingBits);
 //    printf("  -- Got wsl <|");
 //    wslPrint(wsl);
 //    printf("|>\n");
+
+    if ((w->diagID+1) % autoDividePeriod == 0) {
+        diagonal diag = (oct->diags[w->diagID]);
+
+        int nSplitRays = 1 << (w->diagID / autoDividePeriod);
+        int step = diag.size / (nSplitRays + 1);
+        xyPos splitTile = oct->tilePoses[diag.firstTile];
+        for (int k = 0; k < nSplitRays; k++) {
+            splitTile.x -= step;
+            splitTile.y += step;
+
+            ray splitRay = tileToCWRay(splitTile);
+            wslSplit(wsl, splitRay);
+        }
+    }
+
     w->childMap[blockingBits] = wslToWedges(oct, wdi, wsl);
     if (0) {
         wslDestroy(wsl);
@@ -223,8 +240,6 @@ static WedgeSpecList wBitsToChildSpecs(Wedge wedge, unsigned int blockingBits) {
     return output;
 }
 
-
-/*
 static void wslSplit(WedgeSpecList self, ray splitEdge) {
     if (self == NULL) {
         return;
@@ -236,13 +251,12 @@ static void wslSplit(WedgeSpecList self, ray splitEdge) {
 
         self->data.cwEdge = splitEdge;
         new->data.ccwEdge = splitEdge;
-        return;
     } else {
-        return wslSplit(self->next, splitEdge);
+        wslSplit(self->next, splitEdge);
     }
 }
 
-
+/*
 static WedgeSpecList wslClip(WedgeSpecList self, wedgeSpec bounding) {
 //    Not yet implemented!
     return NULL;

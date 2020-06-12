@@ -8,5 +8,5 @@ Wedge wdiLookupIndex(WedgeDict self, int wedgeID);
 int wdiNextWedgeID(WedgeDict wdi);
 int wdiNumWedges(WedgeDict wdi);
 
-void wdiBuild(Octant oct, WedgeDict wdi, int maxDepth);
+void wdiBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoDividePeriod);
 void wdiMergeEquivalent(WedgeDict wdi);

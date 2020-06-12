@@ -63,6 +63,6 @@ void wDestroy(Wedge self);
 int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2);
 int wEqualsSpec(Wedge self, wedgeSpec spec);
 
-void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth);
+void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth, int autoDividePeriod);
 
 void wsPrint(wedgeSpec ws);
