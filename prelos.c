@@ -98,11 +98,16 @@ void testRecast() {
     nmgRecast(nm, grid);
 }
 
-void createNodes(int oDepth, int autoDividePeriod) {
-    printf("Creating node-memory with ADP %d / depth %d:", autoDividePeriod, oDepth);
+void createNodes(int oDepth, int autoDividePeriod, int ME) {
+    printf("Creating node-memory with ADP %d / depth %d / mergeq %d:", autoDividePeriod, oDepth, ME);
     Octant oct = octCreate(oDepth);
     WedgeDict wdi = wdiCreate(oct);
     wdiBuild(oct, wdi, oDepth-1, autoDividePeriod);
+
+    if (ME) {
+        wdiMergeEquivalent(wdi);
+    }
+
     NodeMemory nm = nmCreate(wdi);
     nmDestroy(nm);
     octDestroy(oct);
@@ -112,7 +117,8 @@ void testSizes() {
     for (int adp = 6; adp <= 12; adp++) {
         printf ("-- ADP %d\n", adp);
         for (int k = 20; k <= 45; k+= 5) {
-            createNodes(k, adp);
+            createNodes(k, adp, 0);
+            createNodes(k, adp, 1);
 //            system("free -hm");
         }
     }

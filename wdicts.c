@@ -65,6 +65,7 @@ void wdiDestroy(WedgeDict self) {
 void wdiPrint(WedgeDict self) {
     printf("WedgeDict with %d diag radixes\n", self->nRadixes);
     for (int diagID = 0; diagID < self->nRadixes; diagID++) {
+        printf("DI %d - ", diagID);
         wdiRadixPrint(self->byDiagIDs[diagID]);
     }
     return;
@@ -72,7 +73,12 @@ void wdiPrint(WedgeDict self) {
 
 static WDRadix wdiRadixCreate(Octant oct, int diagID){
     WDRadix self = malloc(sizeof(struct wdRadix));
-    self->size = ((1 << oct->diags[diagID].size) * (diagID+1)) >> 1;
+
+
+    // A good estimation of radix size is that it increases by 10% per step?
+    self->size = (8 << (diagID / 5)) * (diagID+1);
+//    self->size = ((1 << oct->diags[diagID].size) * (diagID+1)) >> 1;
+
     self->byHashes = malloc(sizeof(Wedge) * self->size);
     for (int k = 0; k < self->size; k++) {
         self->byHashes[k] = NULL;
@@ -94,13 +100,14 @@ static void wdiRadixDestroy(WDRadix self) {
 }
 static void wdiRadixPrint(WDRadix self) {
     printf("Radix of size %d (%d elem, %d coll):", self->size, self->d_elements, self->d_collisions);
+    /*
     for (int cur = 0; cur < self->size; cur++) {
         if (self->byHashes[cur] != NULL) {
             printf("@");
         } else {
             printf(".");
         }
-    }
+    }*/
     printf("\n");
     /*
     for (int cur = 0; cur < self->size; cur++) {
@@ -128,7 +135,8 @@ static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {
 //    printf("Running through and merging from radix of diag %d\n", diagID);
 
     WDRadix radix = wdi->byDiagIDs[diagID];
-//    wdiRadixPrint(radix);
+    printf("DI %d - ", diagID);
+    wdiRadixPrint(radix);
 
     for (int curIndex = 0; curIndex < radix->size; curIndex++) {
         Wedge curWedge = radix->byHashes[curIndex];
@@ -153,7 +161,8 @@ Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
     WDRadix radix = self->byDiagIDs[spec.diagID];
 
     int hash = hashSpec(spec);
-    for (int cur = hash % radix->size; ; cur = (cur+1) % radix->size) {
+    int iters = 0;
+    for (int cur = hash % radix->size; iters++ <= radix-> size; cur = (cur+1) % radix->size) {
         if (radix->byHashes[cur] == NULL) {
             Wedge new = wCreate(oct, self, spec);
             radix->byHashes[cur] = new;
@@ -169,6 +178,8 @@ Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
             return NULL;
         }
     }
+    printf("Allocation error - radix %d has size %d!\n", spec.diagID, radix->size);
+    exit(0);
     return NULL;
 }
 
