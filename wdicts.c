@@ -8,6 +8,8 @@
 #include "wedges.h"
 #include "wdicts.h"
 
+#define HASHTABLE_EXPAND_THRESHOLD 0.7
+
 typedef struct wdRadix * WDRadix;
 
 struct wedgeDict {
@@ -31,6 +33,9 @@ static void wdiRadixPrint(WDRadix self);
 static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID);
 
 static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoDividePeriod);
+
+static void wdiRadixInsert(WDRadix self, Wedge wedge);
+static void wdiRadixExpand(WDRadix self);
 
 
 int wdiNextWedgeID(WedgeDict wdi){
@@ -74,10 +79,8 @@ void wdiPrint(WedgeDict self) {
 static WDRadix wdiRadixCreate(Octant oct, int diagID){
     WDRadix self = malloc(sizeof(struct wdRadix));
 
-
     // A good estimation of radix size is that it increases by 10% per step?
-    self->size = (8 << (diagID / 5)) * (diagID+1);
-//    self->size = ((1 << oct->diags[diagID].size) * (diagID+1)) >> 1;
+    self->size = 32 << (diagID / 4);
 
     self->byHashes = malloc(sizeof(Wedge) * self->size);
     for (int k = 0; k < self->size; k++) {
@@ -98,6 +101,7 @@ static void wdiRadixDestroy(WDRadix self) {
     free(self->byHashes);
     free(self);
 }
+
 static void wdiRadixPrint(WDRadix self) {
     printf("Radix of size %d (%d elem, %d coll):", self->size, self->d_elements, self->d_collisions);
     /*
@@ -160,6 +164,11 @@ static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {
 Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
     WDRadix radix = self->byDiagIDs[spec.diagID];
 
+    if ( ((float)radix->d_elements) / ((float) radix->size) > HASHTABLE_EXPAND_THRESHOLD ) {
+        printf("Hashtable too full - radix %d has size %d with %d items filled (%d collisions)!  Expanding radix!\n", spec.diagID, radix->size, radix->d_elements, radix->d_collisions);
+        wdiRadixExpand(radix);
+    }
+
     int hash = hashSpec(spec);
     int iters = 0;
     for (int cur = hash % radix->size; iters++ <= radix-> size; cur = (cur+1) % radix->size) {
@@ -174,13 +183,42 @@ Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
             return radix->byHashes[cur];
         } else if (wEqualsSpec(radix->byHashes[cur], spec)) {
             return radix->byHashes[cur];
-        } else if (cur > radix->size) {
-            return NULL;
         }
     }
-    printf("Allocation error - radix %d has size %d!\n", spec.diagID, radix->size);
+    printf("Allocation error - radix %d has size %d!  Expanding radix!\n", spec.diagID, radix->size);
+    wdiRadixExpand(radix);
+    return wdiLookup(oct, self, spec);
+}
+
+static void wdiRadixInsert(WDRadix self, Wedge wedge) {
+    int hash = hashSpec((*wedge));
+    int iters = 0;
+    for (int cur = hash % self->size; iters++ <= self->size; cur = (cur+1) % self->size) {
+        if (self->byHashes[cur] == NULL) {
+            self->byHashes[cur] = wedge;
+            if (cur != hash % self->size) {
+                self->d_collisions += 1;
+            }
+            return;
+        }
+    }
+    printf("Unable to insert into expanded radix???  This should never occur!\n");
     exit(0);
-    return NULL;
+}
+static void wdiRadixExpand(WDRadix self) {
+    self->d_collisions = 0;
+    Wedge * oldByHashes = self->byHashes;
+    self->size *= 2;
+    self->byHashes = malloc( sizeof(Wedge) * self->size);
+    for (int k = 0; k < self->size; k++) {
+        self->byHashes[k] = NULL;
+    }
+    for (int k = 0; k < self->size / 2; k++) {
+        if (oldByHashes[k] != NULL) {
+            wdiRadixInsert(self, oldByHashes[k]);
+        }
+    }
+    free (oldByHashes);
 }
 
 Wedge wdiLookupIndex(WedgeDict self, int wedgeID) {
