@@ -57,7 +57,7 @@ NodeMemory nmCreate(WedgeDict wdi) {
 
     wdiDestroy(wdi);
 
-    printf("Final datasize: %ld bytes (%ld kb)\n", datasize, datasize >> 10);
+    printf("Final datasize: %d nodes, %ld bytes (%ld kb)\n", self->nNodes, datasize, datasize >> 10);
 
     return self;
 }

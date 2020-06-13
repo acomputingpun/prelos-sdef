@@ -1,8 +1,8 @@
 #define xyGradCmp(p1, p2) (p1.y*p2.x - p2.y*p1.x)
 
 struct xyPos {
-    int x;
-    int y;
+    char x;
+    char y;
 };
 typedef struct xyPos xyPos;
 

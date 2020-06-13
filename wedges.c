@@ -182,12 +182,12 @@ static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int bloc
         diagonal diag = (oct->diags[w->diagID]);
 
         int nSplitRays = 1 << (w->diagID / autoDividePeriod);
-        int step = diag.size / (nSplitRays + 1);
+        int step = diag.size / (nSplitRays);
         xyPos splitTile = oct->tilePoses[diag.firstTile];
-        for (int k = 0; k < nSplitRays; k++) {
+
+        for (int k = 1; k < nSplitRays; k++) {
             splitTile.x -= step;
             splitTile.y += step;
-
             ray splitRay = tileToCWRay(splitTile);
             wslSplit(wsl, splitRay);
         }

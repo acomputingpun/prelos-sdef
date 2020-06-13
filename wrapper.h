@@ -1,1 +1,1 @@
-NodeMemory losPrecompute(int oDepth);
+NodeMemory losPrecompute(int oDepth, int autoDividePeriod);

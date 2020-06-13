@@ -36,6 +36,7 @@ static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoD
 int wdiNextWedgeID(WedgeDict wdi){
     if (wdi->nWedges == wdi->indexArraySize) {
         wdi->indexArraySize *= 2;
+//        printf("Reallocating for a total size of %d\n", wdi->indexArraySize);
         wdi->byIndex = realloc(wdi->byIndex, sizeof(Wedge) * wdi->indexArraySize);
     }
     return wdi->nWedges++;

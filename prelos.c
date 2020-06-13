@@ -109,10 +109,11 @@ void createNodes(int oDepth, int autoDividePeriod) {
 }
 
 void testSizes() {
-    for (int adp = 5; adp <= 12; adp++) {
+    for (int adp = 6; adp <= 12; adp++) {
         printf ("-- ADP %d\n", adp);
-        for (int k = 1; k <= 30; k++) {
+        for (int k = 20; k <= 45; k+= 5) {
             createNodes(k, adp);
+//            system("free -hm");
         }
     }
 }
@@ -160,7 +161,6 @@ void testMemory() {
     nmDestroy(nm);
     octDestroy(oct);
 }
-
 
 int main (int argc, char** argv) {
 //    testGrid();

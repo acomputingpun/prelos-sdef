@@ -9,10 +9,11 @@
 #include "nodes.h"
 #include "wrapper.h"
 
-NodeMemory losPrecompute(int oDepth) {
+NodeMemory losPrecompute(int oDepth, int autoDividePeriod) {
+    printf ("Running w/ ADP %d, depth %d ", autoDividePeriod, oDepth);
     Octant oct = octCreate(oDepth);
     WedgeDict wdi = wdiCreate(oct);
-    wdiBuild(oct, wdi, oDepth-1, 8);
+    wdiBuild(oct, wdi, oDepth-1, autoDividePeriod);
     NodeMemory nm = nmCreate(wdi);
     return nm;
 }
