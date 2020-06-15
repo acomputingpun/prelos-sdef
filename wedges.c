@@ -26,7 +26,7 @@ static int wslLength(WedgeSpecList self);
 static int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl);
 static void wslSplit(WedgeSpecList self, ray splitEdge);
 
-static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits, int autoDividePeriod);
+static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits);
 
 
 static WedgeSpecList wslPush(WedgeSpecList self, wedgeSpec data) {
@@ -151,10 +151,12 @@ static int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl) {
     return output;
 }
 
-void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth, int autoDividePeriod) {
+void wTraverse(Octant oct, WedgeDict wdi, Wedge w) {
 //    printf("TRAVERSING: ");
 //    wPrint(w);
 //    printf("\n");
+
+    int maxDepth = oct->nDiags -1;
 
     if (w->diagID >= maxDepth) {
 //        printf("  -- Wedge at diag %d, too far!  Got wsl (nothing) for all children!\n", w->diagID);
@@ -165,31 +167,32 @@ void wTraverse(Octant oct, WedgeDict wdi, Wedge w, int maxDepth, int autoDivideP
         if (w->diagID >= maxDepth) {
             w->childMap[blockingBits] = wslToWedges(oct, wdi, NULL);
         } else {
-            wInnerTraverse(oct, wdi, w, blockingBits, autoDividePeriod);
+            wInnerTraverse(oct, wdi, w, blockingBits);
         }
     }
 //    printf("  DONE traverse of %d\n", w->wedgeID);
 }
 
-static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits, int autoDividePeriod) {
+static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits) {
 //    printf("  -- BlockingBits %x\n", blockingBits);
     WedgeSpecList wsl = wBitsToChildSpecs(w, blockingBits);
 //    printf("  -- Got wsl <|");
 //    wslPrint(wsl);
 //    printf("|>\n");
 
-    if ((w->diagID+1) % autoDividePeriod == 0) {
+    if ((w->diagID+1) % oct->autoDividePeriod == 0) {
         diagonal diag = (oct->diags[w->diagID]);
 
-        int nSplitRays = 1 << (w->diagID / autoDividePeriod);
+        int nSplitRays = 1 << (w->diagID / oct->autoDividePeriod);
         int step = diag.size / (nSplitRays);
         xyPos splitTile = oct->tilePoses[diag.firstTile];
-
-        for (int k = 1; k < nSplitRays; k++) {
+        for (int k = 1; k < nSplitRays; k += 2) {
             splitTile.x -= step;
             splitTile.y += step;
             ray splitRay = tileToCWRay(splitTile);
             wslSplit(wsl, splitRay);
+            splitTile.x -= step;
+            splitTile.y += step;
         }
     }
 

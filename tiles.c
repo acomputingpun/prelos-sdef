@@ -6,9 +6,10 @@
 
 static void octDiagPrint(Octant self, diagonal diag);
 
-Octant octCreate(int nDiags) {
+Octant octCreate(int nDiags, int autoDividePeriod) {
     Octant self = malloc(sizeof(struct octant));
 
+    self->autoDividePeriod = autoDividePeriod;
     self->nDiags = nDiags;
     self->diags = malloc(sizeof(struct diagonal) * nDiags);
 

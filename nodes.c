@@ -13,6 +13,8 @@
 typedef struct node * Node;
 
 struct nodeMemory {
+    int oDepth;
+    int autoDividePeriod;
     int nNodes;
     Node * matrix;
 };
@@ -32,6 +34,9 @@ NodeMemory nmCreate(WedgeDict wdi) {
     NodeMemory self = malloc(sizeof(struct nodeMemory));
     size_t datasize = 0;
     self->nNodes = 0;
+
+    self->oDepth = wdiDepth(wdi);
+    self->autoDividePeriod = wdiPeriod(wdi);
 
     int nWedges = wdiNumWedges(wdi);
 
@@ -77,6 +82,12 @@ void nmPrint(NodeMemory nm){
     }
 }
 
+int nmDepth(NodeMemory nm) {
+    return nm->oDepth;
+}
+int nmPeriod(NodeMemory nm) {
+    return nm->autoDividePeriod;
+}
 
 static size_t nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
     size_t datasize = 0;

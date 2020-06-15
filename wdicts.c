@@ -13,6 +13,7 @@
 typedef struct wdRadix * WDRadix;
 
 struct wedgeDict {
+    int autoDividePeriod;
     int nRadixes;
     int nWedges;
     int indexArraySize;
@@ -32,7 +33,7 @@ static void wdiRadixPrint(WDRadix self);
 
 static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID);
 
-static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoDividePeriod);
+static void wdiIterativeBuild(Octant oct, WedgeDict wdi);
 
 static void wdiRadixInsert(WDRadix self, Wedge wedge);
 static void wdiRadixExpand(WDRadix self);
@@ -49,6 +50,7 @@ int wdiNextWedgeID(WedgeDict wdi){
 
 WedgeDict wdiCreate(Octant oct) {
     WedgeDict self = malloc(sizeof(struct wedgeDict));
+    self->autoDividePeriod = oct->autoDividePeriod;
     self->indexArraySize = 64;
     self->nWedges = 0;
     self->byIndex = malloc(sizeof(Wedge) * self->indexArraySize);
@@ -74,6 +76,13 @@ void wdiPrint(WedgeDict self) {
         wdiRadixPrint(self->byDiagIDs[diagID]);
     }
     return;
+}
+
+int wdiDepth(WedgeDict self) {
+    return self->nRadixes;
+}
+int wdiPeriod(WedgeDict self) {
+    return self->autoDividePeriod;
 }
 
 static WDRadix wdiRadixCreate(Octant oct, int diagID){
@@ -139,8 +148,8 @@ static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {
 //    printf("Running through and merging from radix of diag %d\n", diagID);
 
     WDRadix radix = wdi->byDiagIDs[diagID];
-    printf("DI %d - ", diagID);
-    wdiRadixPrint(radix);
+//    printf("DI %d - ", diagID);
+//    wdiRadixPrint(radix);
 
     for (int curIndex = 0; curIndex < radix->size; curIndex++) {
         Wedge curWedge = radix->byHashes[curIndex];
@@ -165,7 +174,7 @@ Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
     WDRadix radix = self->byDiagIDs[spec.diagID];
 
     if ( ((float)radix->d_elements) / ((float) radix->size) > HASHTABLE_EXPAND_THRESHOLD ) {
-        printf("Hashtable too full - radix %d has size %d with %d items filled (%d collisions)!  Expanding radix!\n", spec.diagID, radix->size, radix->d_elements, radix->d_collisions);
+//        printf("Hashtable too full - radix %d has size %d with %d items filled (%d collisions)!  Expanding radix!\n", spec.diagID, radix->size, radix->d_elements, radix->d_collisions);
         wdiRadixExpand(radix);
     }
 
@@ -185,7 +194,7 @@ Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
             return radix->byHashes[cur];
         }
     }
-    printf("Allocation error - radix %d has size %d!  Expanding radix!\n", spec.diagID, radix->size);
+//    printf("Allocation error - radix %d has size %d!  Expanding radix!\n", spec.diagID, radix->size);
     wdiRadixExpand(radix);
     return wdiLookup(oct, self, spec);
 }
@@ -240,14 +249,15 @@ static inline ray tileToCCWRay(xyPos tile) {
     return ccwEdge;
 }
 
-void wdiBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoDividePeriod) {
+void wdiBuild(Octant oct, WedgeDict wdi) {
     wdiLookup(oct, wdi, wsInitial());
-    wdiIterativeBuild(oct, wdi, maxDepth, autoDividePeriod);
+    wdiIterativeBuild(oct, wdi);
 }
 
-static void wdiIterativeBuild(Octant oct, WedgeDict wdi, int maxDepth, int autoDividePeriod) {
+static void wdiIterativeBuild(Octant oct, WedgeDict wdi) {
+    printf("Filling WDI\n");
     for (int wedgeID = 0; wedgeID < wdi->nWedges; wedgeID++) {
-        wTraverse(oct, wdi, wdiLookupIndex(wdi, wedgeID), maxDepth, autoDividePeriod);
+        wTraverse(oct, wdi, wdiLookupIndex(wdi, wedgeID));
     }
 //    printf("DONE recursive traverse to depth %d\n", maxDepth);
 }
