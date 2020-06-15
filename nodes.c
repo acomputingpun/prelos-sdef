@@ -169,6 +169,9 @@ void nmgRecastFrom(NodeMemory nm, void * grid, int nodeID) {
 }
 
 void nmFlatten(NodeMemory nm, FILE * stream) {
+    fwrite(&(nm->oDepth), sizeof(int), 1, stream);
+    fwrite(&(nm->autoDividePeriod), sizeof(int), 1, stream);
+
     fwrite(&(nm->nNodes), sizeof(int), 1, stream);
 
     for (int k = 0; k < nm->nNodes; k++) {
@@ -189,8 +192,13 @@ static void nFlatten(Node n, FILE * stream) {
 }
 
 NodeMemory nmUnflatten(FILE * stream) {
+//    printf("Unflattening nodeMemory!\n");
+
     NodeMemory nm = malloc(sizeof(struct nodeMemory));
     fread(&(nm->nNodes), sizeof(int), 1, stream);
+
+//    printf("Read nNodes: %d\n", nm->nNodes);
+
     nm->matrix = malloc(sizeof(Node) * nm->nNodes);
     for (int k = 0; k < nm->nNodes; k++) {
         nm->matrix[k] = nUnflatten(stream);
@@ -199,16 +207,32 @@ NodeMemory nmUnflatten(FILE * stream) {
 }
 
 static Node nUnflatten(FILE * stream) {
+//    printf(" - Unflattening node!\n");
+
     Node n = malloc(sizeof(struct node));
     fread(&(n->firstTile), sizeof(xyPos), 1, stream);
+//    printf("  - Read firstTile: %d, %d\n", n->firstTile.x, n->firstTile.y);
     fread(&(n->segmentLength), sizeof(int), 1, stream);
+//    printf("  - Read segmentLength: %d\n", n->segmentLength);
+
     int maxBlockingBits = getMaxBlockingBits(n);
+    n->childMap = malloc(sizeof(int *) * maxBlockingBits);
     for (int blockingBits = 0; blockingBits < maxBlockingBits; blockingBits++) {
+//        printf("  - Reading for BB %x\n", blockingBits);
+
         int arrLen = 0;
         fread(&arrLen, sizeof(int), 1, stream);
-        int * children = malloc(sizeof(int) * arrLen + 1);
+//        printf("    - Got arrLen %d\n", arrLen);
+
+        int * children = malloc(sizeof(int) * (arrLen + 1));
         children[0] = arrLen;
         if (arrLen > 0) {
+            /*
+            for (int k = 0; k <= arrLen; k++) {
+                printf("     - Children[%d] is: %d\n", k, children[k]);
+            }
+            printf("Children[1] is %p\n", &(children[1]));
+            printf("Children +1 is %p\n", children+1);*/
             fread(children+1, sizeof(int), arrLen, stream);
         }
         n->childMap[blockingBits] = children;

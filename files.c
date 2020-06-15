@@ -12,10 +12,11 @@ static int checkFileAttrs(FILE * stream, int oDepth, int autoDividePeriod);
 
 NodeMemory readMemoryFile(int oDepth, int autoDividePeriod) {
     char filename [60];
-    sprintf(filename, "./%d_%dnodes.mem", oDepth, autoDividePeriod);
+    sprintf(filename, "./nodes%d_%d.mem", oDepth, autoDividePeriod);
 
-    FILE * stream = fopen("rb", filename);
+    FILE * stream = fopen(filename, "rb");
     if (stream == NULL) {
+        printf("Unable to open file '%s' for reading!\n", filename);
         return NULL;
     }
     if (!checkFileAttrs(stream, oDepth, autoDividePeriod)) {
@@ -25,10 +26,17 @@ NodeMemory readMemoryFile(int oDepth, int autoDividePeriod) {
     return nmUnflatten(stream);
 }
 void writeMemoryFile(NodeMemory nm) {
+//    printf("Writing memory file!\n");
     char filename [60];
-    sprintf(filename, "./%d_%dnodes.mem", nmDepth(nm), nmPeriod(nm));
+    sprintf(filename, "./nodes%d_%d.mem", nmDepth(nm), nmPeriod(nm));
 
-    FILE * stream = fopen("wb", filename);
+//    printf("Writing to %s!\n", filename);
+
+    FILE * stream = fopen(filename, "wb");
+
+    if (stream == NULL) {
+        printf("Unable to open file '%s' for writing!\n", filename);
+    }
 
     int versionID = VERSION_ID;
     fwrite(&(versionID), sizeof(versionID), 1, stream);
@@ -38,6 +46,10 @@ void writeMemoryFile(NodeMemory nm) {
 static int checkFileAttrs(FILE * stream, int oDepth, int autoDividePeriod) {
     int check[3];
     fread(check, sizeof(int), 3, stream);
+
+//    printf("Able to open file for reading, and got attrs %d, %d, %d\n", check[0], check[1], check[2]);
+//    printf("expected %d %d %d", VERSION_ID, oDepth, autoDividePeriod);
+
     if (check[0] != VERSION_ID) {
         return 0;
     } else if (check[1] != oDepth) {

@@ -7,6 +7,7 @@
 #include "wedges.h"
 #include "wdicts.h"
 #include "nodes.h"
+#include "wrapper.h"
 
 #include "grids.h"
 #include "localgrids.h"
@@ -125,6 +126,10 @@ void testSizes() {
     }
 }
 
+void testFiles() {
+    losLookup( 5, 5 );
+}
+
 void testMemory() {
     int oDepth = 7;
 
@@ -170,9 +175,10 @@ void testMemory() {
 }
 
 int main (int argc, char** argv) {
-//    testGrid();
+    testGrid();
 //    testRecast();
 //    testMemory();
-    testSizes();
+//    testSizes();
+//    testFiles();
     return 0;
 }
