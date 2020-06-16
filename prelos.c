@@ -12,24 +12,19 @@
 #include "grids.h"
 #include "localgrids.h"
 
-void test() {
-    int oDepth = 15;
+void testAngles() {
+    xyPos ang;
+    ang.x = 3;
+    ang.y = 1;
+    int len = 6;
 
-    Octant o = octCreate(oDepth, 8);
-    octPrint(o);
+    printf("Precise X value of intersect is %a (vs 4.5 %a)\n", rayIntersectX(ang, len), 4.5 );
 
-    WedgeDict wdi = wdiCreate(o);
-    wdiPrint(wdi);
+    xyPos cwIntersect = cwDiagIntersectTile(ang, len);
+    xyPos ccwIntersect = ccwDiagIntersectTile(ang, len);
 
-    printf("Running recursive traverse!\n");
-
-    wdiBuild(o, wdi);
-
-    wdiMergeEquivalent(wdi);
-
-    wdiPrint(wdi);
-
-    return;
+    printf("CW tile from (%d, %d) at len %d after sub is %a -> %a -> (%d, %d)\n", ang.x, ang.y, len,  (rayIntersectX(ang, len) + 0.5), (rayIntersectX(ang, len) + 0.5), cwIntersect.x, cwIntersect.y);
+    printf("CCW tile from (%d, %d) at len %d after sub is %a -> (%d, %d)\n", ang.x, ang.y, len,  (rayIntersectX(ang, len) - 0.5), ccwIntersect.x, ccwIntersect.y);
 }
 
 void * setupGrid() {
@@ -51,14 +46,11 @@ void testGrid() {
         tDiagSet(grid, oct->tilePoses[diag.firstTile], diag.size, 0);
     }
 
-    xyPos x = {2, 0};
-    tSet(grid, x, '#');
-
     gridPrint(grid);
 }
 
 void testRecast() {
-    int oDepth = 3;
+    int oDepth = 12;
 
     void * grid = setupGrid();
 
@@ -72,7 +64,7 @@ void testRecast() {
         tDiagSet(grid, oct->tilePoses[diag.firstTile], diag.size, '.');
     }
 
-    xyPos x = {2, 0};
+    xyPos x = {1, 1};
     tSet(grid, x, '#');
 
     gridPrint(grid);
@@ -97,6 +89,8 @@ void testRecast() {
     nmPrint(nm);
 
     nmgRecast(nm, grid);
+
+    gridPrint(grid);
 }
 
 void createNodes(int oDepth, int autoDividePeriod, int ME) {
@@ -175,8 +169,10 @@ void testMemory() {
 }
 
 int main (int argc, char** argv) {
-    testGrid();
-//    testRecast();
+//    testAngles();
+
+//    testGrid();
+    testRecast();
 //    testMemory();
 //    testSizes();
 //    testFiles();

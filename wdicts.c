@@ -255,7 +255,7 @@ void wdiBuild(Octant oct, WedgeDict wdi) {
 }
 
 static void wdiIterativeBuild(Octant oct, WedgeDict wdi) {
-    printf("Filling WDI\n");
+//    printf("Filling WDI\n");
     for (int wedgeID = 0; wedgeID < wdi->nWedges; wedgeID++) {
         wTraverse(oct, wdi, wdiLookupIndex(wdi, wedgeID));
     }

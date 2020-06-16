@@ -19,9 +19,8 @@ int tLookup(void * grid, xyPos xy) {
 unsigned int tDiagLookups(void * grid, xyPos source, int len) {
     unsigned int result = 0;
     for (int k = 0; k < len; k++) {
-        result = result << 1;
         if (tLookup(grid, source) == '#') {
-            result++;
+            result = result | (1 << k);
         } else {
             tSet(grid, source, 'o');
         }

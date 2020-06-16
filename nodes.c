@@ -96,14 +96,15 @@ static size_t nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
     datasize += sizeof(struct node);
 
 
-//    printf("  -Just called nCreate on wedge index %d!\n", wIndex);
+    printf("-Just called nCreate on wedge index %d!\n", wIndex);
 
     n->segmentLength = w->segmentLength;
     n->firstTile = w->firstTile;
     n->childMap = malloc(sizeof(int *) * getMaxBlockingBits(w));
     datasize += sizeof(int *) * getMaxBlockingBits(w);
 
-//    printf("  -Got firstTile (%d, %d), segmentLen %d, maxBB %x!\n", n->firstTile.x, n->firstTile.y, n->segmentLength, getMaxBlockingBits(w));
+    printf("  Wedge firstTile (%d, %d), segmentLen %d, maxBB %x!", n->firstTile.x, n->firstTile.y, n->segmentLength, getMaxBlockingBits(w));
+    printf("    and Wedge cwRay (%d, %d), ccwRay (%d, %d)\n", w->cwEdge.x, w->cwEdge.y, w->ccwEdge.x, w->ccwEdge.y);
 
     for (unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(w); blockingBits++) {
 
@@ -129,6 +130,7 @@ static size_t nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
         }
 //        printf("   -done w/ bb %x\n", blockingBits);
     }
+    nPrint(n);
 //    printf("  -Done copying!\n");
     nm->matrix[w->finalNodeID] = n;
     return datasize;
