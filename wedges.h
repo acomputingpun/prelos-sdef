@@ -51,8 +51,6 @@ struct wedge {
     int finalNodeID;
 };
 
-#define getMaxBlockingBits(w) (1 << w->segmentLength)
-
 typedef struct wedge * Wedge;
 typedef struct wedgeDict * WedgeDict;
 

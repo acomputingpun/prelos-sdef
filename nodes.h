@@ -1,6 +1,18 @@
 typedef struct nodeMemory * NodeMemory;
+typedef struct node * Node;
 
-NodeMemory nmCreate(WedgeDict wdi);
+struct nodeMemory {
+    int oDepth;
+    int autoDividePeriod;
+    int nNodes;
+    Node * matrix;
+};
+struct node {
+    xyPos firstTile;
+    int segmentLength;
+    int ** childMap;
+};
+
 void nmDestroy(NodeMemory nm);
 void nmPrint(NodeMemory nm);
 

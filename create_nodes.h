@@ -1,0 +1,1 @@
+NodeMemory nmCreate(WedgeDict wdi);

@@ -8,3 +8,5 @@ typedef struct xyPos xyPos;
 
 xyPos gcdReduce(xyPos xy);
 void xyPosPrint(xyPos xy);
+
+#define getMaxBlockingBits(w) (1 << w->segmentLength)

@@ -2,12 +2,8 @@
 #include <stdio.h>
 
 #include "poses.h"
-#include "tiles.h"
 #include "rays.h"
-#include "wedges.h"
-#include "wdicts.h"
 #include "nodes.h"
-#include "create_nodes.h"
 #include "wrapper.h"
 #include "files.h"
 
@@ -21,9 +17,6 @@ NodeMemory losLookup(int oDepth, int autoDividePeriod) {
 }
 
 NodeMemory losPrecompute(int oDepth, int autoDividePeriod) {
-    Octant oct = octCreate(oDepth, autoDividePeriod);
-    WedgeDict wdi = wdiCreate(oct);
-    wdiBuild(oct, wdi);
-    NodeMemory nm = nmCreate(wdi);
-    return nm;
+    printf("Unable to precompute LOS; read-only library lacks generation code!");
+    return NULL;
 }
