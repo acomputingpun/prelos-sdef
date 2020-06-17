@@ -14,7 +14,7 @@ shared: ${ALLO} linkgrids.o
 	${CC} -o prelos.so -shared ${ALLO} linkgrids.o -lm
 
 ro_shared: ${READONLYO} linkgrids.o ro_wrapper.o
-	${CC} -o ro_prelos.so -shared ${READONLYO} linkgrids.o -lm
+	${CC} -o prelos.so -shared ${READONLYO} linkgrids.o ro_wrapper.o -lm
 
 prelos.o: prelos.c poses.h wedges.h rays.h tiles.h nodes.h
 	${CC} ${CFLAGS} prelos.c

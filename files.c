@@ -1,10 +1,6 @@
 #include <stdio.h>
 
 #include "poses.h"
-#include "tiles.h"
-#include "rays.h"
-#include "wedges.h"
-#include "wdicts.h"
 #include "nodes.h"
 #include "files.h"
 
@@ -42,9 +38,9 @@ void writeMemoryFile(NodeMemory nm) {
 
 static int checkFileAttrs(FILE * stream, int oDepth, int autoDividePeriod) {
     int check[3];
-    fread(check, sizeof(int), 3, stream);
-
-    if (check[0] != VERSION_ID) {
+    if (!fread(check, sizeof(int), 3, stream)) {
+        return 0;
+    } else if (check[0] != VERSION_ID) {
         return 0;
     } else if (check[1] != oDepth) {
         return 0;
