@@ -20,7 +20,6 @@ NodeMemory losLookup(int oDepth, int autoDividePeriod) {
 }
 
 NodeMemory losPrecompute(int oDepth, int autoDividePeriod) {
-    printf ("Running w/ ADP %d, depth %d ", autoDividePeriod, oDepth);
     Octant oct = octCreate(oDepth, autoDividePeriod);
     WedgeDict wdi = wdiCreate(oct);
     wdiBuild(oct, wdi);

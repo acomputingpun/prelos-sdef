@@ -42,7 +42,6 @@ static void wdiRadixExpand(WDRadix self);
 int wdiNextWedgeID(WedgeDict wdi){
     if (wdi->nWedges == wdi->indexArraySize) {
         wdi->indexArraySize *= 2;
-//        printf("Reallocating for a total size of %d\n", wdi->indexArraySize);
         wdi->byIndex = realloc(wdi->byIndex, sizeof(Wedge) * wdi->indexArraySize);
     }
     return wdi->nWedges++;
@@ -122,14 +121,6 @@ static void wdiRadixPrint(WDRadix self) {
         }
     }*/
     printf("\n");
-    /*
-    for (int cur = 0; cur < self->size; cur++) {
-        if (self->byHashes[cur] != NULL) {
-            printf("  ");
-            wPrint(self->byHashes[cur]);
-            printf("\n");
-        }
-    }*/
 }
 
 ///
@@ -145,11 +136,7 @@ int wdiNumWedges(WedgeDict wdi) {
 }
 
 static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {
-//    printf("Running through and merging from radix of diag %d\n", diagID);
-
     WDRadix radix = wdi->byDiagIDs[diagID];
-//    printf("DI %d - ", diagID);
-//    wdiRadixPrint(radix);
 
     for (int curIndex = 0; curIndex < radix->size; curIndex++) {
         Wedge curWedge = radix->byHashes[curIndex];
@@ -158,7 +145,6 @@ static void wdiRadixMergeEquivalent(WedgeDict wdi, int diagID) {
                 Wedge otherWedge = radix->byHashes[otherIndex];
                 if (otherWedge != NULL) {
                     if (wEquivalent(wdi, curWedge, otherWedge)) {
-//                        printf("    ...they are equivalent - merging!\n");
                         otherWedge->mergedID = curWedge->mergedID;
                     }
                 }
@@ -174,7 +160,6 @@ Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
     WDRadix radix = self->byDiagIDs[spec.diagID];
 
     if ( ((float)radix->d_elements) / ((float) radix->size) > HASHTABLE_EXPAND_THRESHOLD ) {
-//        printf("Hashtable too full - radix %d has size %d with %d items filled (%d collisions)!  Expanding radix!\n", spec.diagID, radix->size, radix->d_elements, radix->d_collisions);
         wdiRadixExpand(radix);
     }
 
@@ -194,7 +179,6 @@ Wedge wdiLookup(Octant oct, WedgeDict self, wedgeSpec spec) {
             return radix->byHashes[cur];
         }
     }
-//    printf("Allocation error - radix %d has size %d!  Expanding radix!\n", spec.diagID, radix->size);
     wdiRadixExpand(radix);
     return wdiLookup(oct, self, spec);
 }
@@ -231,8 +215,6 @@ static void wdiRadixExpand(WDRadix self) {
 }
 
 Wedge wdiLookupIndex(WedgeDict self, int wedgeID) {
-//    printf("looking up index %d\n", wedgeID);
-//    printf("sbi %p\n", self->byIndex);
     return self->byIndex[wedgeID];
 }
 
@@ -255,9 +237,7 @@ void wdiBuild(Octant oct, WedgeDict wdi) {
 }
 
 static void wdiIterativeBuild(Octant oct, WedgeDict wdi) {
-//    printf("Filling WDI\n");
     for (int wedgeID = 0; wedgeID < wdi->nWedges; wedgeID++) {
         wTraverse(oct, wdi, wdiLookupIndex(wdi, wedgeID));
     }
-//    printf("DONE recursive traverse to depth %d\n", maxDepth);
 }

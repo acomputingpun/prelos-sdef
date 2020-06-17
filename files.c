@@ -26,11 +26,8 @@ NodeMemory readMemoryFile(int oDepth, int autoDividePeriod) {
     return nmUnflatten(stream);
 }
 void writeMemoryFile(NodeMemory nm) {
-//    printf("Writing memory file!\n");
     char filename [60];
     sprintf(filename, "./nodes%d_%d.mem", nmDepth(nm), nmPeriod(nm));
-
-//    printf("Writing to %s!\n", filename);
 
     FILE * stream = fopen(filename, "wb");
 
@@ -46,9 +43,6 @@ void writeMemoryFile(NodeMemory nm) {
 static int checkFileAttrs(FILE * stream, int oDepth, int autoDividePeriod) {
     int check[3];
     fread(check, sizeof(int), 3, stream);
-
-//    printf("Able to open file for reading, and got attrs %d, %d, %d\n", check[0], check[1], check[2]);
-//    printf("expected %d %d %d", VERSION_ID, oDepth, autoDividePeriod);
 
     if (check[0] != VERSION_ID) {
         return 0;

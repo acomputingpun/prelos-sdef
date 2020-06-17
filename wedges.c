@@ -74,15 +74,6 @@ Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec) {
     self->wedgeID = wdiNextWedgeID(wdi);
     self->mergedID = self->wedgeID;
 
-    printf("Creating wedge %d!\n", self->wedgeID);
-    printf("  CW edge: (%d, %d)\n", self->cwEdge.x, self->cwEdge.y);
-    printf("  = xint %f\n", rayIntersectX(self->cwEdge, self->diagID));
-    printf("  = tile (%d, %d)\n", self->firstTile.x, self->firstTile.y);
-
-    printf("  CCW edge: (%d, %d)\n", self->ccwEdge.x, self->ccwEdge.y);
-    printf("  = xint %f\n", rayIntersectX(self->ccwEdge, self->diagID));
-    printf("  = tile (%d, %d)\n", lastTile.x, lastTile.y);
-
     self->childMap = malloc(sizeof(int *) * getMaxBlockingBits(self) );
     return self;
 }
@@ -100,8 +91,6 @@ void wDestroy(Wedge self) {
 static int cmEquivalent(WedgeDict wdi, int * cm1, int * cm2);
 
 int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2){
-//    printf("    Comparing wedges of ID %d and %d\n", w1->wedgeID, w2->wedgeID);
-
     if (w1->firstTile.x != w2->firstTile.x || w1->firstTile.y != w2->firstTile.y) {
         return 0;
     } else if (w1->segmentLength != w2->segmentLength) {
@@ -117,7 +106,6 @@ int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2){
 }
 
 static int cmEquivalent(WedgeDict wdi, int * cm1, int * cm2) {
-//    printf("      Comparing childmaps (ptrs %p and %p) for equivalence!\n", cm1, cm2);
     if (cm1[0] != cm2[0]) {
         return 0;
     } else {
@@ -161,19 +149,7 @@ static int * wslToWedges (Octant oct, WedgeDict wdi, WedgeSpecList wsl) {
 }
 
 void wTraverse(Octant oct, WedgeDict wdi, Wedge w) {
-//    printf("TRAVERSING: ");
-//    wPrint(w);
-//    printf("\n");
-
     int maxDepth = oct->nDiags -1;
-
-    if (w->diagID >= maxDepth) {
-//        printf("  -- Wedge at diag %d, too far!  Got wsl (nothing) for all children!\n", w->diagID);
-    }
-
-    printf("traversing ", w->wedgeID);
-    wPrint(w);
-    printf("\n");
 
     unsigned int maxBlockingBits = getMaxBlockingBits(w);
     for (unsigned int blockingBits = 0; blockingBits < maxBlockingBits; blockingBits++) {
@@ -183,15 +159,10 @@ void wTraverse(Octant oct, WedgeDict wdi, Wedge w) {
             wInnerTraverse(oct, wdi, w, blockingBits);
         }
     }
-//    printf("  DONE traverse of %d\n", w->wedgeID);
 }
 
 static void wInnerTraverse(Octant oct, WedgeDict wdi, Wedge w, unsigned int blockingBits) {
-//    printf("  -- BlockingBits %x\n", blockingBits);
     WedgeSpecList wsl = wBitsToChildSpecs(w, blockingBits);
-//    printf("  -- Got wsl <|");
-//    wslPrint(wsl);
-//    printf("|>\n");
 
     if ((w->diagID+1) % oct->autoDividePeriod == 0) {
         diagonal diag = (oct->diags[w->diagID]);
@@ -224,37 +195,23 @@ static WedgeSpecList wBitsToChildSpecs(Wedge wedge, unsigned int blockingBits) {
 
     xyPos curTile = wedge->firstTile;
 
-    printf("  CREATING WSL from wedge %d with blockingBits %x:\n", wedge->wedgeID, blockingBits);
-    if (curBlockingStreak) {
-        printf("    > We begin within a blocking streak!\n");
-    } else {
-        printf("    > We begin in a non-blocking streak!\n");
-    }
-
     for (int k = wedge->segmentLength; k > 0; k--) {
         if(curBlockingStreak) {
             if (blockingBits & 1) {
-                printf("    > Still in blocking streak\n");
-
                 // do nothing - we're on a blocking streak!
             } else {
-                printf("    > Leaving blocking streak!\n");
                 curBlockingStreak = 0;
                 cwEdge = tileToCWRay(curTile);
             }
         } else {
             if (blockingBits & 1) {
-                printf("    > Entering blocking streak!\n");
                 curBlockingStreak = 1;
 
                 ray ccwEdge;
                 ccwEdge = tileToCWRay(curTile);
 
-                printf("      + closing off open wedge (%d, %d) -> (%d, %d)\n", cwEdge.x, cwEdge.y, ccwEdge.x, ccwEdge.y);
-
                 output = wslPush(output, wsCreate(wedge->diagID+1, cwEdge, ccwEdge));
             } else {
-                printf("    > Still not in blocking streak!\n");
                 // do nothing - we remain on a non-blocking streak!
             }
         }
@@ -285,29 +242,6 @@ static void wslSplit(WedgeSpecList self, ray splitEdge) {
         wslSplit(self->next, splitEdge);
     }
 }
-
-/*
-static WedgeSpecList wslClip(WedgeSpecList self, wedgeSpec bounding) {
-//    Not yet implemented!
-    return NULL;
-    WedgeSpecList dest = NULL;
-    while (1) {
-        if ( wsContains(self->data, bounding.cwEdge) ) {
-            if ( wsContains(self->data, bounding.ccwEdge) ) {
-                // clip entirely?
-//                self->data
-            } else {
-            }
-        } else {
-            if ( wsContains(self->data, bounding.ccwEdge) ) {
-            } else {
-                dest = wslPush(dest, self->data);
-            }
-        }
-
-    }
-}
-*/
 
 void wPrint(Wedge self) {
     printf("Wedge #%d (%d|", self->wedgeID, self->diagID);
