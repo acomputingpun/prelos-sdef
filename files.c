@@ -12,7 +12,7 @@ static int checkFileAttrs(FILE * stream, int oDepth, int autoDividePeriod);
 
 NodeMemory readMemoryFile(int oDepth, int autoDividePeriod) {
     char filename [60];
-    sprintf(filename, "./nodes%d_%d.mem", oDepth, autoDividePeriod);
+    sprintf(filename, MEMORY_PATH "nodes%d_%d.mem", oDepth, autoDividePeriod);
 
     FILE * stream = fopen(filename, "rb");
     if (stream == NULL) {
@@ -27,7 +27,7 @@ NodeMemory readMemoryFile(int oDepth, int autoDividePeriod) {
 }
 void writeMemoryFile(NodeMemory nm) {
     char filename [60];
-    sprintf(filename, "./nodes%d_%d.mem", nmDepth(nm), nmPeriod(nm));
+    sprintf(filename, MEMORY_PATH "nodes%d_%d.mem", nmDepth(nm), nmPeriod(nm));
 
     FILE * stream = fopen(filename, "wb");
 
