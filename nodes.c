@@ -9,7 +9,7 @@
 
 static void nDestroy(Node n);
 static void nPrint(Node n);
-static void nFlatten(Node n, FILE * stream);
+static int nFlatten(Node n, FILE * stream);
 static Node nUnflatten(FILE * stream);
 
 void nmDestroy(NodeMemory nm){
@@ -71,27 +71,27 @@ void nmgRecastFrom(NodeMemory nm, void * grid, int nodeID) {
     }
 }
 
-void nmFlatten(NodeMemory nm, FILE * stream) {
-    fwrite(&(nm->oDepth), sizeof(int), 1, stream);
-    fwrite(&(nm->autoDividePeriod), sizeof(int), 1, stream);
-
-    fwrite(&(nm->nNodes), sizeof(int), 1, stream);
+int nmFlatten(NodeMemory nm, FILE * stream) {
+    if (!fwrite(&(nm->oDepth), sizeof(int), 1, stream)) { return 0; }
+    if (!fwrite(&(nm->autoDividePeriod), sizeof(int), 1, stream)) { return 0; }
+    if (!fwrite(&(nm->nNodes), sizeof(int), 1, stream)) { return 0; }
 
     for (int k = 0; k < nm->nNodes; k++) {
-        nFlatten(nm->matrix[k], stream);
+        if (!nFlatten(nm->matrix[k], stream)) { return 0; }
     }
 
-    return;
+    return 1;
 }
 
-static void nFlatten(Node n, FILE * stream) {
-    fwrite(&(n->firstTile), sizeof(xyPos), 1, stream);
-    fwrite(&(n->segmentLength), sizeof(int), 1, stream);
+static int nFlatten(Node n, FILE * stream) {
+    if (!fwrite(&(n->firstTile), sizeof(xyPos), 1, stream)) { return 0; }
+    if (!fwrite(&(n->segmentLength), sizeof(int), 1, stream)) { return 0; }
     int maxBlockingBits = getMaxBlockingBits(n);
     for (int blockingBits = 0; blockingBits < maxBlockingBits; blockingBits++) {
         int * children = n->childMap[blockingBits];
-        fwrite(children, sizeof(int), children[0]+1, stream);
+        if (fwrite(children, sizeof(int), children[0]+1, stream) != children[0]+1) { return 0; }
     }
+    return 1;
 }
 
 NodeMemory nmUnflatten(FILE * stream) {

@@ -6,9 +6,9 @@
 
 static int checkFileAttrs(FILE * stream, int oDepth, int autoDividePeriod);
 
-NodeMemory readMemoryFile(int oDepth, int autoDividePeriod) {
-    char filename [60];
-    sprintf(filename, MEMORY_PATH "nodes%d_%d.mem", oDepth, autoDividePeriod);
+NodeMemory readMemoryFileFrom(int oDepth, int autoDividePeriod, char* memoryPath) {
+    char filename [120];
+    sprintf(filename, "%snodes%d_%d.mem", memoryPath, oDepth, autoDividePeriod);
 
     FILE * stream = fopen(filename, "rb");
     if (stream == NULL) {
@@ -21,19 +21,28 @@ NodeMemory readMemoryFile(int oDepth, int autoDividePeriod) {
     }
     return nmUnflatten(stream);
 }
-void writeMemoryFile(NodeMemory nm) {
-    char filename [60];
-    sprintf(filename, MEMORY_PATH "nodes%d_%d.mem", nmDepth(nm), nmPeriod(nm));
+int writeMemoryFileTo(NodeMemory nm, char* memoryPath) {
+    char filename [120];
+    sprintf(filename, "%snodes%d_%d.mem", memoryPath, nmDepth(nm), nmPeriod(nm));
 
     FILE * stream = fopen(filename, "wb");
 
     if (stream == NULL) {
         printf("Unable to open file '%s' for writing!\n", filename);
+        return 0;
     }
 
     int versionID = VERSION_ID;
-    fwrite(&(versionID), sizeof(versionID), 1, stream);
-    nmFlatten(nm, stream);
+    if (!fwrite(&(versionID), sizeof(versionID), 1, stream)) { return 0; }
+    if (!nmFlatten(nm, stream)) { return 0; }
+    return 1;
+}
+
+NodeMemory readMemoryFile(int oDepth, int autoDividePeriod) {
+    return readMemoryFileFrom(oDepth, autoDividePeriod, DEFAULT_MEMORY_PATH);
+}
+int writeMemoryFile(NodeMemory nm) {
+    return writeMemoryFileTo(nm, DEFAULT_MEMORY_PATH);
 }
 
 static int checkFileAttrs(FILE * stream, int oDepth, int autoDividePeriod) {

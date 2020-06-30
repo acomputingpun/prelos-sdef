@@ -11,13 +11,21 @@
 #include "wrapper.h"
 #include "files.h"
 
-NodeMemory losLookup(int oDepth, int autoDividePeriod) {
-    NodeMemory nm = readMemoryFile(oDepth, autoDividePeriod);
+NodeMemory losLookupFrom(int oDepth, int autoDividePeriod, char* memoryPath) {
+    printf("Got memory path |%s|\n", memoryPath);
+    NodeMemory nm = readMemoryFileFrom(oDepth, autoDividePeriod, memoryPath);
     if (nm == NULL) {
         nm = losPrecompute(oDepth, autoDividePeriod);
-        writeMemoryFile(nm);
+        if (!writeMemoryFileTo(nm, memoryPath)) {
+            nmDestroy(nm);
+            return NULL;
+        }
     }
     return nm;
+}
+
+NodeMemory losLookup(int oDepth, int autoDividePeriod) {
+    return losLookupFrom(oDepth, autoDividePeriod, DEFAULT_MEMORY_PATH);
 }
 
 NodeMemory losPrecompute(int oDepth, int autoDividePeriod) {
