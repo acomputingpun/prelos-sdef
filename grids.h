@@ -1,2 +1,2 @@
 int tLookup(void * grid, xyPos pos);
-unsigned int tDiagLookups(void * grid, xyPos source, int len);
+unsigned int tDiagLookups(void * grid, xyPos source, int len, ccMask cornerClips);

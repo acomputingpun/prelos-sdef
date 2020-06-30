@@ -54,6 +54,7 @@ static size_t nCreate (NodeMemory nm, WedgeDict wdi, int wIndex) {
 
     n->segmentLength = w->segmentLength;
     n->firstTile = w->firstTile;
+    n->cornerClips = w->cornerClips;
     n->childMap = malloc(sizeof(int *) * getMaxBlockingBits(w));
     datasize += sizeof(int *) * getMaxBlockingBits(w);
 

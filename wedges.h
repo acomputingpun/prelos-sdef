@@ -45,6 +45,7 @@ struct wedge {
 
     xyPos firstTile;
     int segmentLength;
+    ccMask cornerClips;
 
     int ** childMap;
     int mergedID;

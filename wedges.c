@@ -70,6 +70,13 @@ Wedge wCreate(Octant oct, WedgeDict wdi, wedgeSpec spec) {
     self->firstTile = cwDiagIntersectTile( self->cwEdge, self->diagID);
     xyPos lastTile = ccwDiagIntersectTile( self->ccwEdge, self->diagID);
     self->segmentLength = (self->firstTile.x - lastTile.x) + 1;
+    self->cornerClips = 0;
+    if ( rayCmp(self->cwEdge, self->firstTile) > 0 ) {
+        self->cornerClips |= 1;
+    }
+    if (rayCmp(lastTile, self->ccwEdge) > 0) {
+        self->cornerClips |= 2;
+    }
 
     self->wedgeID = wdiNextWedgeID(wdi);
     self->mergedID = self->wedgeID;
@@ -94,6 +101,8 @@ int wEquivalent(WedgeDict wdi, Wedge w1, Wedge w2){
     if (w1->firstTile.x != w2->firstTile.x || w1->firstTile.y != w2->firstTile.y) {
         return 0;
     } else if (w1->segmentLength != w2->segmentLength) {
+        return 0;
+    } else if (w1->cornerClips != w2->cornerClips) {
         return 0;
     } else {
         for (unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(w1); blockingBits++) {

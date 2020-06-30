@@ -30,8 +30,8 @@ void testAngles() {
 
 void * setupGrid() {
     xyPos size;
-    size.x = 12;
-    size.y = 12;
+    size.x = 16;
+    size.y = 16;
     void * grid = gridCreate( size );
     return grid;
 }
@@ -48,6 +48,41 @@ void testGrid() {
     }
 
     gridPrint(grid);
+}
+
+void testCorner() {
+    int oDepth = 15;
+    void * grid = setupGrid();
+
+    Octant oct = octCreate(oDepth, 8);
+    octPrint(oct);
+
+    for (int nDiag = 0; nDiag < oct->nDiags; nDiag++) {
+        diagonal diag = oct->diags[nDiag];
+        tDiagSet(grid, oct->tilePoses[diag.firstTile], diag.size, '.');
+    }
+
+    xyPos x1 = {6, 0};
+    tSet(grid, x1, '#');
+    xyPos x2 = {6, 1};
+    tSet(grid, x2, '#');
+    xyPos x3 = {6, 2};
+    tSet(grid, x3, '#');
+    xyPos x4 = {6, 3};
+    tSet(grid, x4, '#');
+    xyPos x5 = {6, 4};
+    tSet(grid, x5, '#');
+
+    gridPrint(grid);
+
+    WedgeDict wdi = wdiCreate(oct);
+    wdiBuild(oct, wdi);
+    NodeMemory nm = nmCreate(wdi);
+    printf("Done creating node-memory, now wcasting:\n");
+    nmgRecast(nm, grid);
+
+    gridPrint(grid);
+
 }
 
 void testRecast() {
@@ -172,8 +207,9 @@ void testMemory() {
 int main (int argc, char** argv) {
 //    testAngles();
 
+    testCorner();
 //    testGrid();
-    testRecast();
+//    testRecast();
 //    testMemory();
 //    testSizes();
 //    testFiles();

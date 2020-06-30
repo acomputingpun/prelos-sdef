@@ -9,7 +9,7 @@ int tLookup(void * grid, xyPos xy) {
     return tDiagLookups(grid, xy, 1);
 }
 
-unsigned int tDiagLookups(void * grid, xyPos source, int len) {
+unsigned int tDiagLookups(void * grid, xyPos source, int len, ccMask cornerClips) {
     int (*callback)(int x, int y, int segmentLen) = grid;
-    return callback(source.x, source.y, len);
+    return callback(source.x, source.y, len, cornerClips);
 }

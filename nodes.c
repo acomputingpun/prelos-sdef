@@ -47,7 +47,7 @@ static void nDestroy(Node n) {
     free(n);
 }
 static void nPrint(Node n) {
-    printf("Node (%d,%d) %d -> (%d,%d)\n", n->firstTile.x, n->firstTile.y, n->segmentLength, 1+n->firstTile.x-n->segmentLength, n->firstTile.y+n->segmentLength-1);
+    printf("Node (%d,%d) %d -> (%d,%d) [%d]\n", n->firstTile.x, n->firstTile.y, n->segmentLength, 1+n->firstTile.x-n->segmentLength, n->firstTile.y+n->segmentLength-1, n->cornerClips);
     for(unsigned int blockingBits = 0; blockingBits < getMaxBlockingBits(n); blockingBits++){
         printf("    %x | (", blockingBits);
         for (int k = 1; k <= n->childMap[blockingBits][0]; k++) {
@@ -64,7 +64,7 @@ void nmgRecast(NodeMemory nm, void * grid) {
 
 void nmgRecastFrom(NodeMemory nm, void * grid, int nodeID) {
     Node cur = nm->matrix[nodeID];
-    int blockingBits = tDiagLookups(grid, cur->firstTile, cur->segmentLength);
+    int blockingBits = tDiagLookups(grid, cur->firstTile, cur->segmentLength, cur->cornerClips);
     int * children = cur->childMap[blockingBits];
     for (int k = children[0]; k > 0; k--) {
         nmgRecastFrom(nm, grid, children[k]);
@@ -86,6 +86,7 @@ int nmFlatten(NodeMemory nm, FILE * stream) {
 static int nFlatten(Node n, FILE * stream) {
     if (!fwrite(&(n->firstTile), sizeof(xyPos), 1, stream)) { return 0; }
     if (!fwrite(&(n->segmentLength), sizeof(int), 1, stream)) { return 0; }
+    if (!fwrite(&(n->cornerClips), sizeof(ccMask), 1, stream)) { return 0; }
     int maxBlockingBits = getMaxBlockingBits(n);
     for (int blockingBits = 0; blockingBits < maxBlockingBits; blockingBits++) {
         int * children = n->childMap[blockingBits];
@@ -115,6 +116,9 @@ static Node nUnflatten(FILE * stream) {
         return fErrorHandle(stream);
     };
     if (! fread(&(n->segmentLength), sizeof(int), 1, stream) ) {
+        return fErrorHandle(stream);
+    }
+    if (! fread(&(n->cornerClips), sizeof(ccMask), 1, stream) ) {
         return fErrorHandle(stream);
     }
 

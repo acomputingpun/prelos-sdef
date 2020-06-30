@@ -10,6 +10,7 @@ struct nodeMemory {
 struct node {
     xyPos firstTile;
     int segmentLength;
+    ccMask cornerClips;
     int ** childMap;
 };
 

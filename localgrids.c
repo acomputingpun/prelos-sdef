@@ -16,13 +16,19 @@ int tLookup(void * grid, xyPos xy) {
     return self->matrix[self->size.x * xy.y + xy.x];
 }
 
-unsigned int tDiagLookups(void * grid, xyPos source, int len) {
+unsigned int tDiagLookups(void * grid, xyPos source, int len, ccMask cornerClips) {
     unsigned int result = 0;
     for (int k = 0; k < len; k++) {
         if (tLookup(grid, source) == '#') {
             result = result | (1 << k);
         } else {
-            tSet(grid, source, 'o');
+            if ((k == 0) && (cornerClips&1)) {
+                tSet(grid,source,'u');
+            } else if ((k == len-1) && (cornerClips&2)) {
+                tSet(grid,source,'u');
+            } else {
+                tSet(grid, source, 'o');
+            }
         }
         source.x--;
         source.y++;

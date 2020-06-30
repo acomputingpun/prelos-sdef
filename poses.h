@@ -10,3 +10,5 @@ xyPos gcdReduce(xyPos xy);
 void xyPosPrint(xyPos xy);
 
 #define getMaxBlockingBits(w) (1 << w->segmentLength)
+
+typedef int ccMask;
