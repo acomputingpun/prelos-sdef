@@ -12,7 +12,6 @@
 #include "files.h"
 
 NodeMemory losLookupFrom(int oDepth, int autoDividePeriod, char* memoryPath) {
-    printf("Got memory path |%s|\n", memoryPath);
     NodeMemory nm = readMemoryFileFrom(oDepth, autoDividePeriod, memoryPath);
     if (nm == NULL) {
         nm = losPrecompute(oDepth, autoDividePeriod);
